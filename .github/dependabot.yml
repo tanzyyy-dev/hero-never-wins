@@ -1,0 +1,11 @@
+# GitHub Actions のバージョン（SHA 固定）を週次で確認し、更新があれば PR を作成する
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - '*'
