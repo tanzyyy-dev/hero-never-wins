@@ -1,0 +1,209 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!-- 筐体風ダークエンブレム背景グラデーション -->
+    <linearGradient id="shieldBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2638" />
+      <stop offset="35%" stop-color="#0e1320" />
+      <stop offset="100%" stop-color="#04060a" />
+    </linearGradient>
+
+    <!-- 外周メタリッククロームベゼル -->
+    <linearGradient id="chromeBezel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eaf0fa" />
+      <stop offset="25%" stop-color="#ffffff" />
+      <stop offset="50%" stop-color="#4e5c77" />
+      <stop offset="75%" stop-color="#9eb0cf" />
+      <stop offset="100%" stop-color="#1e2535" />
+    </linearGradient>
+
+    <!-- 金色のベゼルインナーリング -->
+    <linearGradient id="goldRim" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#997016" />
+      <stop offset="30%" stop-color="#ffe17d" />
+      <stop offset="60%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#b38412" />
+    </linearGradient>
+
+    <!-- パチスロ「P」ルビー＆ゴールドグラデーション -->
+    <linearGradient id="pRedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4460" />
+      <stop offset="25%" stop-color="#e60026" />
+      <stop offset="70%" stop-color="#8a0012" />
+      <stop offset="100%" stop-color="#400006" />
+    </linearGradient>
+
+    <linearGradient id="pEdgeGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="30%" stop-color="#ffe585" />
+      <stop offset="70%" stop-color="#c99718" />
+      <stop offset="100%" stop-color="#543800" />
+    </linearGradient>
+
+    <!-- コイン用ゴールドグラデーション (上面) -->
+    <linearGradient id="coinFaceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#ffea75" />
+      <stop offset="65%" stop-color="#e6b015" />
+      <stop offset="100%" stop-color="#996a00" />
+    </linearGradient>
+
+    <!-- コイン用側面 (厚み) グラデーション -->
+    <linearGradient id="coinSideGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#734c00" />
+      <stop offset="25%" stop-color="#d49e17" />
+      <stop offset="50%" stop-color="#fff2a8" />
+      <stop offset="75%" stop-color="#d49e17" />
+      <stop offset="100%" stop-color="#4d3100" />
+    </linearGradient>
+
+    <!-- シャドウフィルター -->
+    <filter id="dropShadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.9" />
+    </filter>
+    <filter id="glowGold" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffea00" flood-opacity="0.85" />
+    </filter>
+  </defs>
+
+  <!-- 1. エンブレム外枠（角丸シールド） -->
+  <rect x="7" y="7" width="114" height="114" rx="26" fill="url(#chromeBezel)" />
+  <rect x="10" y="10" width="108" height="108" rx="23" fill="url(#goldRim)" />
+  <rect x="13" y="13" width="102" height="102" rx="20" fill="url(#shieldBg)" />
+
+  <!-- 筐体スリット微細グリッドライン（パチスロ質感） -->
+  <g opacity="0.12">
+    <line x1="16" y1="28" x2="112" y2="28" stroke="#ffffff" stroke-width="1" />
+    <line x1="16" y1="44" x2="112" y2="44" stroke="#ffffff" stroke-width="1" />
+    <line x1="16" y1="60" x2="112" y2="60" stroke="#ffffff" stroke-width="1" />
+    <line x1="16" y1="76" x2="112" y2="76" stroke="#ffffff" stroke-width="1" />
+    <line x1="16" y1="92" x2="112" y2="92" stroke="#ffffff" stroke-width="1" />
+    <line x1="16" y1="108" x2="112" y2="108" stroke="#ffffff" stroke-width="1" />
+  </g>
+
+  <!-- 2. パチスロ「P」文字 (重厚・立体エンボス) -->
+  <g filter="url(#dropShadow)">
+    <!-- Pのゴールド外枠 (Stroke) -->
+    <path d="M 23 20
+             L 60 20
+             C 77 20, 86 30, 86 44
+             C 86 58, 77 68, 60 68
+             L 44 68
+             L 44 104
+             L 23 104
+             Z
+             M 44 35
+             L 44 53
+             L 57 53
+             C 64 53, 67 50, 67 44
+             C 67 38, 64 35, 57 35
+             Z"
+          fill="url(#pEdgeGold)" />
+
+    <!-- Pのメインボディ (ルビーレッド) -->
+    <path d="M 26 23
+             L 59 23
+             C 74 23, 82 32, 82 44
+             C 82 56, 74 65, 59 65
+             L 41 65
+             L 41 101
+             L 26 101
+             Z
+             M 41 38
+             L 41 50
+             L 56 50
+             C 61 50, 64 48, 64 44
+             C 64 40, 61 38, 56 38
+             Z"
+          fill="url(#pRedGrad)" />
+
+    <!-- Pの内側ハイライト（光沢ライン） -->
+    <path d="M 28 25
+             L 58 25
+             C 68 25, 75 30, 78 39
+             C 76 31, 69 27, 59 27
+             L 30 27
+             L 30 98
+             L 28 98
+             Z"
+          fill="#ffffff"
+          opacity="0.65" />
+  </g>
+
+  <!-- 3. 右下の3枚縦積みコイン (Stack of 3 Pachislot Medals) -->
+  <!-- 3枚が下から順に積み重なり、Pの右下に美しく収まる -->
+  <g filter="url(#dropShadow)">
+    <!-- === COIN 1 (最下段: Y=92) === -->
+    <g transform="translate(0, 0)">
+      <!-- 側面 (厚み) -->
+      <path d="M 60 92
+               A 23 8.5 0 0 0 106 92
+               L 106 98
+               A 23 8.5 0 0 1 60 98
+               Z"
+            fill="url(#coinSideGrad)" />
+      <!-- コイン側面のリブ刻み模様 -->
+      <path d="M 66 95 L 66 98 M 74 96 L 74 99 M 83 97 L 83 100 M 92 96 L 92 99 M 100 95 L 100 98"
+            stroke="#402600" stroke-width="1" opacity="0.6" />
+      <!-- 上面 (Face) -->
+      <ellipse cx="83" cy="92" rx="23" ry="8.5" fill="url(#coinFaceGrad)" stroke="#ffd700" stroke-width="0.8" />
+      <ellipse cx="83" cy="92" rx="18.5" ry="6.5" fill="none" stroke="#b38600" stroke-width="0.7" opacity="0.6" />
+    </g>
+
+    <!-- === COIN 2 (中段: Y=80) === -->
+    <g transform="translate(0, -12)">
+      <!-- 側面 (厚み) -->
+      <path d="M 60 92
+               A 23 8.5 0 0 0 106 92
+               L 106 98
+               A 23 8.5 0 0 1 60 98
+               Z"
+            fill="url(#coinSideGrad)" />
+      <path d="M 66 95 L 66 98 M 74 96 L 74 99 M 83 97 L 83 100 M 92 96 L 92 99 M 100 95 L 100 98"
+            stroke="#402600" stroke-width="1" opacity="0.6" />
+      <!-- 上面 (Face) -->
+      <ellipse cx="83" cy="92" rx="23" ry="8.5" fill="url(#coinFaceGrad)" stroke="#ffd700" stroke-width="0.8" />
+      <ellipse cx="83" cy="92" rx="18.5" ry="6.5" fill="none" stroke="#b38600" stroke-width="0.7" opacity="0.6" />
+    </g>
+
+    <!-- === COIN 3 (最上段: Y=68) === -->
+    <g transform="translate(0, -24)">
+      <!-- 側面 (厚み) -->
+      <path d="M 60 92
+               A 23 8.5 0 0 0 106 92
+               L 106 98
+               A 23 8.5 0 0 1 60 98
+               Z"
+            fill="url(#coinSideGrad)" />
+      <path d="M 66 95 L 66 98 M 74 96 L 74 99 M 83 97 L 83 100 M 92 96 L 92 99 M 100 95 L 100 98"
+            stroke="#402600" stroke-width="1" opacity="0.6" />
+      <!-- 上面 (Face) -->
+      <ellipse cx="83" cy="92" rx="23" ry="8.5" fill="url(#coinFaceGrad)" stroke="#ffffff" stroke-width="1" />
+      <ellipse cx="83" cy="92" rx="18.5" ry="6.5" fill="none" stroke="#996a00" stroke-width="0.8" />
+      <!-- 中央のスターレリーフ ★ -->
+      <path d="M 83 88.5
+               L 84.4 91.2
+               L 87.5 91.6
+               L 85.2 93.4
+               L 86 96.5
+               L 83 94.8
+               L 80 96.5
+               L 80.8 93.4
+               L 78.5 91.6
+               L 81.6 91.2
+               Z"
+            fill="#ffffff"
+            opacity="0.95"
+            filter="url(#glowGold)" />
+    </g>
+  </g>
+
+  <!-- 4. キラリと輝くレンズスパークル (Lens Flare / Sparkle) -->
+  <g transform="translate(100, 60)">
+    <path d="M 0 -8 Q 0 0 8 0 Q 0 0 0 8 Q 0 0 -8 0 Q 0 0 0 -8 Z" fill="#ffffff" filter="url(#glowGold)" />
+    <circle cx="0" cy="0" r="2.2" fill="#ffffff" />
+  </g>
+  <g transform="translate(36, 21)">
+    <path d="M 0 -5 Q 0 0 5 0 Q 0 0 0 5 Q 0 0 -5 0 Q 0 0 0 -5 Z" fill="#ffffff" opacity="0.85" />
+    <circle cx="0" cy="0" r="1.4" fill="#ffffff" />
+  </g>
+</svg>

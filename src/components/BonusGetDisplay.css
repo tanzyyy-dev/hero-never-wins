@@ -1,0 +1,158 @@
+/* =========================================================
+   BONUS GET DISPLAY (シリアスな戦闘開始演出 / カジノ感完全排除)
+   ========================================================= */
+
+.bonus-get-display-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #150314 0%, #09010a 50%, #030005 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* PixiJS Canvas ラッパー (闇夜の稲妻 ＆ 激しい闘気エフェクト) */
+.pixi-canvas-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pixi-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* 登場時の閃光ホワイトフラッシュ */
+.bonus-white-flash {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* コンテンツレイヤー */
+.bonus-get-content {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 12px;
+  user-select: none;
+}
+
+/* --- 1. シリアスなバトル仕様「777」エンブレム --- */
+.seven-trio-emblem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.95));
+}
+
+.seven-num {
+  font-family: Impact, "Arial Black", -apple-system, sans-serif;
+  font-size: 3.4rem;
+  font-weight: 900;
+  line-height: 1;
+  font-style: italic;
+  display: inline-block;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e2d5ff 15%,
+    #ff1a3c 40%,
+    #7a0010 70%,
+    #ff2244 85%,
+    #ffffff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #ff7788;
+  filter: drop-shadow(0 0 12px rgba(255, 30, 60, 0.95)) drop-shadow(0 0 24px rgba(160, 40, 255, 0.8));
+  transform: perspective(300px) rotateX(12deg);
+}
+
+.seven-num.num-1 {
+  transform: perspective(300px) rotateX(12deg) rotateZ(-3deg);
+}
+.seven-num.num-2 {
+  font-size: 3.9rem;
+  transform: perspective(300px) rotateX(12deg) scale(1.1);
+}
+.seven-num.num-3 {
+  transform: perspective(300px) rotateX(12deg) rotateZ(3deg);
+}
+
+/* --- 2. 一文字ずつ着弾する「BONUS GET」ロゴ --- */
+.bonus-letters-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 18px rgba(255, 30, 60, 0.85)) drop-shadow(0 6px 20px #000000);
+}
+
+.letter-space {
+  width: 14px;
+}
+
+.slam-letter {
+  display: inline-block;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 3.1rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  font-style: italic;
+  line-height: 1;
+  transform-origin: center center;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #ffdfe6 16%,
+    #ff1a3c 42%,
+    #7a0010 70%,
+    #ffd700 86%,
+    #593800 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1.6px #ffe575;
+  filter: drop-shadow(0 0 10px rgba(255, 30, 60, 0.9)) drop-shadow(0 0 22px rgba(180, 40, 255, 0.75));
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.95);
+  margin: 0 1.5px;
+  position: relative;
+}
+
+/* 各文字の金属光沢シマーライン */
+.slam-letter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    transparent 100%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  opacity: 0.8;
+}

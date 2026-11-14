@@ -1,0 +1,3861 @@
+:root {
+  --cab-bg: #090b10;
+  --bezel-dark: #0d1017;
+  --bezel-frame: #1e2434;
+  --bezel-border: #38425a;
+  --chrome-highlight: linear-gradient(135deg, #abb4c6 0%, #ffffff 35%, #6e7990 70%, #d8dfed 100%);
+  --chrome-rim: linear-gradient(135deg, #d2daeb 0%, #ffffff 30%, #7d8aa3 70%, #edf1fa 100%);
+  --chrome-steel: linear-gradient(180deg, #9ca7ba 0%, #ffffff 35%, #596478 70%, #cad3e2 100%);
+  --gold-text: #ffd154;
+  --blue-led: #00f0ff;
+  --blue-led-glow: rgba(0, 240, 255, 0.85);
+  --red-led: #ff1e38;
+  --red-led-glow: rgba(255, 30, 56, 0.95);
+  --ruby-glass: radial-gradient(circle at 35% 35%, #ff556b 0%, #b80c25 55%, #54030f 100%);
+  --green-led: #2ce674;
+  --amber-led: #ffaa22;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  color: #fff;
+  background-color: #030406;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  touch-action: manipulation;
+}
+
+input,
+textarea,
+select {
+  user-select: auto;
+  -webkit-user-select: auto;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  background: radial-gradient(circle at 50% 15%, #181c2b 0%, #030407 100%);
+}
+
+#root {
+  width: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+}
+
+/* Master Wrapper (Anywhere Tap Target) */
+.cabinet-wrapper {
+  width: 100%;
+  min-height: 100dvh;
+  padding:
+    env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.cabinet-wrapper.scroll-fallback {
+  align-items: flex-start;
+}
+
+html.mobile-portrait-lock,
+html.mobile-portrait-lock body,
+html.mobile-portrait-lock #root {
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.cabinet-wrapper.mobile-portrait {
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  gap: 0;
+}
+
+.cabinet-scale-stage {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   MOBILE PORTRAIT EXPANDED SIDE WINGS (左右余白解消用・連動電装フレーム)
+   ========================================================= */
+.cabinet-side-wing {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #252d40 0%, #141925 45%, #090b11 100%);
+  border-top: 2px solid #45506a;
+  border-bottom: 2px solid #2b3346;
+  overflow: hidden;
+  position: relative;
+}
+
+.cabinet-side-wing.wing-left {
+  border-left: 2px solid #353f56;
+  box-shadow: inset -3px 0 8px rgba(0, 0, 0, 0.85), inset 2px 0 4px rgba(255, 255, 255, 0.08);
+}
+
+.cabinet-side-wing.wing-right {
+  border-right: 2px solid #353f56;
+  box-shadow: inset 3px 0 8px rgba(0, 0, 0, 0.85), inset -2px 0 4px rgba(255, 255, 255, 0.08);
+}
+
+.wing-header-cap {
+  height: 36px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #37435b 0%, #1c2232 45%, #0d1018 100%);
+  border-bottom: 2px solid #3c4864;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.25);
+}
+
+.wing-frame-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 3px;
+  background:
+    repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 2px,
+      transparent 2px,
+      transparent 6px),
+    linear-gradient(180deg, #1b2131 0%, #0e121b 60%, #07090e 100%);
+}
+
+.wing-rivet {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #eef4ff 0%, #7d8da8 60%, #242b3a 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.wing-led-strip {
+  flex: 1;
+  width: clamp(4px, 45%, 14px);
+  margin: 8px 0;
+  border-radius: 4px;
+  position: relative;
+  opacity: 0.95;
+  transition: all 0.2s ease;
+}
+
+.wing-led-strip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, 0.45) 0px,
+      rgba(0, 0, 0, 0.45) 3px,
+      transparent 3px,
+      transparent 6px);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.wing-led-strip.mode-ready {
+  background: linear-gradient(180deg, #a855f7 0%, #4c1d95 50%, #a855f7 100%);
+  border: 1px solid #d8b4fe;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.65);
+}
+
+.wing-led-strip.mode-lever {
+  background: linear-gradient(180deg, #ffffff 0%, #64748b 50%, #ffffff 100%);
+  border: 1px solid #f8fafc;
+  box-shadow: 0 0 10px rgba(248, 250, 252, 0.8);
+  animation: pulse 0.5s infinite alternate;
+}
+
+.wing-led-strip.mode-spin {
+  background: linear-gradient(180deg, #e9d5ff 0%, #6b21a8 50%, #e9d5ff 100%);
+  border: 1px solid #f3e8ff;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.85);
+}
+
+.wing-led-strip.mode-payout {
+  background: linear-gradient(180deg, #ffffff 0%, #ffea00 40%, #ff8800 100%);
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 16px #ffea00, 0 0 28px #ffaa00;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+.wing-led-strip.mode-payout-replay {
+  background: linear-gradient(180deg, #e0f2fe 0%, #3b82f6 40%, #1d4ed8 100%);
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 0 16px #3b82f6, 0 0 28px #2563eb;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+.wing-led-strip.mode-payout-cherry {
+  background: linear-gradient(180deg, #ffd6dc 0%, #ff1e38 40%, #990018 100%);
+  border: 1px solid #ff99aa;
+  box-shadow: 0 0 16px #ff1e38, 0 0 28px #cc0022;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+.wing-led-strip.mode-payout-melon {
+  background: linear-gradient(180deg, #dcfce7 0%, #22c55e 40%, #15803d 100%);
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 0 16px #22c55e, 0 0 28px #16a34a;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+.wing-led-strip.mode-battle {
+  background: linear-gradient(180deg, #ff2200 0%, #cc0033 50%, #ff5500 100%);
+  border: 1px solid #ff9955;
+  box-shadow: 0 0 14px rgba(255, 34, 0, 0.9);
+  animation: pulse 0.3s infinite alternate;
+}
+
+.wing-led-strip.mode-rainbow {
+  background: linear-gradient(180deg, #ff0055 0%, #ffbb00 25%, #00ffaa 50%, #00ccff 75%, #aa00ff 100%);
+  background-size: 100% 200%;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.85);
+  animation: sideLedRainbow 1s linear infinite;
+}
+
+.wing-footer-cap {
+  height: 20px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #1b2130 0%, #0c0f17 100%);
+  border-top: 1.5px solid #3c4760;
+}
+
+/* 縦寸不足時：下皿・スピーカーを隠し、最下部タイトルリムを下パネル直下に配置 */
+.pachislot-cabinet.bottom-compact .belly-glass-section {
+  min-height: 48px;
+  max-height: none;
+}
+
+.pachislot-cabinet.bottom-compact .bottom-unit-core {
+  display: none;
+}
+
+.pachislot-cabinet.bottom-compact .bottom-cabinet-deck {
+  padding: 0 6px 3px;
+  border-top: none;
+}
+
+/* =========================================================
+   AUTHENTIC PACHISLOT CABINET (実機筐体フレーム: 余白ゼロ・完全一体化)
+   ========================================================= */
+.pachislot-cabinet {
+  width: 440px;
+  height: 880px;
+  transform-origin: top left;
+  background:
+    linear-gradient(90deg, #181d2a 0%, #252c3e 4%, #181c28 8%, #0f121a 50%, #181c28 92%, #252c3e 96%, #181d2a 100%),
+    linear-gradient(180deg, #282f40 0%, #161a25 40%, #090b11 100%);
+  border-left: 4px solid #45506a;
+  border-right: 4px solid #45506a;
+  box-shadow:
+    0 0 60px rgba(0, 0, 0, 0.98),
+    inset 2px 0 4px rgba(255, 255, 255, 0.15),
+    inset -2px 0 4px rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* =========================================================
+   1. TOP ILLUMINATION CROWN (超ド派手・演出特化型トップランプユニット)
+   ========================================================= */
+.top-crown {
+  height: 52px;
+  flex-shrink: 0;
+  background:
+    linear-gradient(180deg, #37435b 0%, #1c2232 25%, #0e121a 70%, #05070a 100%);
+  border-bottom: 2.5px solid #3c4864;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 3px 6px rgba(255, 255, 255, 0.4),
+    0 5px 12px rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+/* 左右の多面体プリズムウイング (立体カットレンズ) */
+.crown-prism-wing {
+  width: 44px;
+  display: flex;
+  gap: 3px;
+  align-items: stretch;
+  padding: 5px 2px;
+  position: relative;
+  z-index: 2;
+}
+
+.wing-left {
+  border-right: 1.5px solid #3d4a66;
+}
+
+.wing-right {
+  border-left: 1.5px solid #3d4a66;
+}
+
+.wing-prism-bar {
+  flex: 1;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 0 6px rgba(0, 0, 0, 0.8);
+  transition: all 0.2s ease;
+}
+
+.wing-prism-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(-45deg,
+      rgba(255, 255, 255, 0.4) 0px,
+      rgba(255, 255, 255, 0.4) 2px,
+      transparent 2px,
+      transparent 5px);
+  pointer-events: none;
+}
+
+/* 中央大型アーチランプユニット */
+.crown-center-lamp-unit {
+  flex: 1;
+  position: relative;
+  margin: 0 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0;
+  overflow: hidden;
+}
+
+/* 上部メッキバイザーリム */
+.lamp-brow-visor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3d4a66 0%, #ccd8ee 30%, #ffffff 50%, #ccd8ee 70%, #3d4a66 100%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  z-index: 5;
+}
+
+/* 上下を走るラインLEDランナー */
+.lamp-led-runner {
+  height: 3px;
+  width: 100%;
+  border-radius: 1.5px;
+  position: relative;
+  z-index: 3;
+  transition: all 0.2s ease;
+}
+
+/* 10連マルチセグメント プリズムアレイ */
+.lamp-prism-array {
+  flex: 1;
+  display: flex;
+  gap: 2.5px;
+  align-items: stretch;
+  margin: 2px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.lamp-segment {
+  flex: 1;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #182030 0%, #0a0e16 100%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.segment-prism-facet {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.25) 0px,
+      rgba(255, 255, 255, 0.25) 1.5px,
+      transparent 1.5px,
+      transparent 3.5px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.segment-led-core {
+  width: 80%;
+  height: 60%;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+/* 中央六角シールドプリズムブリッジ (左右5連LEDアレイを統合するセンターエンブレム) */
+.lamp-center-shield {
+  flex: 0 0 28px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -1px 1px;
+  clip-path: polygon(18% 0%, 82% 0%, 100% 34%, 50% 100%, 0% 34%);
+  background: linear-gradient(180deg, #4f5e80 0%, #1d2638 45%, #0c1018 100%);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.9);
+  z-index: 4;
+  transition: all 0.2s ease;
+}
+
+.shield-bezel {
+  position: absolute;
+  inset: 1.5px;
+  clip-path: polygon(18% 0%, 82% 0%, 100% 34%, 50% 100%, 0% 34%);
+  background: linear-gradient(180deg, #1b2334 0%, #090d16 100%);
+  z-index: 1;
+}
+
+.shield-prism-facet {
+  position: absolute;
+  inset: 2px;
+  clip-path: polygon(18% 0%, 82% 0%, 100% 34%, 50% 100%, 0% 34%);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, transparent 48%, rgba(255, 255, 255, 0.16) 100%),
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.16) 0px,
+      rgba(255, 255, 255, 0.16) 1.5px,
+      transparent 1.5px,
+      transparent 3.5px);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.shield-led-core {
+  position: relative;
+  width: 72%;
+  height: 70%;
+  clip-path: polygon(18% 0%, 82% 0%, 100% 34%, 50% 100%, 0% 34%);
+  background: linear-gradient(180deg, #27324a 0%, #121824 100%);
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+/* =========================================================
+   トップランプ演出モード別 発光アニメーション & カラースキーム
+   ========================================================= */
+
+/* --- 1. READY (通常待機中: アメジストパープルのブレス呼吸 — 小役色と被らない非小役色) --- */
+.lamp-mode-ready .crown-prism-wing .wing-prism-bar.bar-1 {
+  background: linear-gradient(180deg, #a855f7 0%, #4c1d95 100%);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+}
+
+.lamp-mode-ready .crown-prism-wing .wing-prism-bar.bar-2 {
+  background: linear-gradient(180deg, #c084fc 0%, #6b21a8 100%);
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
+}
+
+.lamp-mode-ready .crown-prism-wing .wing-prism-bar.bar-3 {
+  background: linear-gradient(180deg, #9333ea 0%, #3b0764 100%);
+  box-shadow: 0 0 8px rgba(147, 51, 234, 0.6);
+}
+
+.lamp-mode-ready .lamp-led-runner {
+  background: linear-gradient(90deg, #6b21a8, #c084fc, #6b21a8);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+  animation: runnerBreathe 2s infinite alternate;
+}
+
+.lamp-mode-ready .lamp-segment {
+  background: linear-gradient(180deg, #1e1036 0%, #0b0518 100%);
+}
+
+.lamp-mode-ready .lamp-segment.seg-1 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-3 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-5 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-7 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-9 .segment-led-core {
+  background: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+  opacity: 0.75;
+}
+
+.lamp-mode-ready .lamp-segment.seg-0 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-2 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-4 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-6 .segment-led-core,
+.lamp-mode-ready .lamp-segment.seg-8 .segment-led-core {
+  background: #9333ea;
+  box-shadow: 0 0 8px #9333ea;
+  opacity: 0.65;
+}
+
+.lamp-mode-ready .lamp-center-shield {
+  filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.65));
+}
+
+.lamp-mode-ready .shield-led-core {
+  background: linear-gradient(180deg, #f3e8ff 0%, #a855f7 55%, #4c1d95 100%);
+  box-shadow: 0 0 10px #a855f7;
+}
+
+@keyframes runnerBreathe {
+  0% {
+    opacity: 0.6;
+    filter: brightness(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
+}
+
+/* --- 2. LEVER (レバーON待機: プラチナホワイト＆シルバーの脈動 — 小役色と被らない非小役色) --- */
+.lamp-mode-lever .crown-prism-wing .wing-prism-bar {
+  background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+  box-shadow: 0 0 12px rgba(248, 250, 252, 0.85);
+  animation: pulse 0.5s infinite alternate;
+}
+
+.lamp-mode-lever .lamp-led-runner {
+  background: linear-gradient(90deg, #94a3b8, #ffffff, #94a3b8);
+  box-shadow: 0 0 14px #f8fafc;
+}
+
+.lamp-mode-lever .lamp-segment .segment-led-core {
+  background: #f8fafc;
+  box-shadow: 0 0 12px #e2e8f0;
+  animation: pulse 0.4s infinite alternate;
+}
+
+.lamp-mode-lever .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 15%, #cbd5e1 60%, #475569 100%);
+  box-shadow: 0 0 14px #f8fafc;
+  animation: pulse 0.35s infinite alternate;
+}
+
+/* --- 3. SPIN (リール回転中: バイオレット＆プラチナホワイト高速走駆チェイス — 小役色と被らない非小役色) --- */
+.lamp-mode-spin .crown-prism-wing .wing-prism-bar {
+  background: linear-gradient(180deg, #e9d5ff 0%, #7e22ce 100%);
+  box-shadow: 0 0 14px #c084fc;
+  animation: pulse 0.2s infinite alternate;
+}
+
+.lamp-mode-spin .lamp-led-runner {
+  background: linear-gradient(90deg, #4c1d95, #c084fc, #ffffff, #c084fc, #4c1d95);
+  background-size: 200% 100%;
+  animation: runnerChase 0.4s linear infinite;
+  box-shadow: 0 0 14px #c084fc;
+}
+
+.lamp-mode-spin .lamp-segment .segment-led-core {
+  background: #d8b4fe;
+  box-shadow: 0 0 10px #c084fc;
+  animation: segChase 0.5s ease-in-out infinite alternate;
+}
+
+.lamp-mode-spin .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 15%, #c084fc 70%, #581c87 100%);
+  box-shadow: 0 0 16px #d8b4fe;
+}
+
+@keyframes runnerChase {
+  0% {
+    background-position: 0% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes segChase {
+  0% {
+    transform: scaleY(0.5);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: scaleY(1.1);
+    opacity: 1;
+  }
+}
+
+/* --- 4. BATTLE (バトル演出中: 燃え盛る真紅＆オレンジの激しいストロボ) --- */
+.lamp-mode-battle {
+  box-shadow: 0 0 25px #ff1e38, inset 0 3px 6px #ffffff;
+}
+
+.lamp-mode-battle .crown-prism-wing .wing-prism-bar {
+  background: linear-gradient(180deg, #ff1e38 0%, #880011 100%);
+  box-shadow: 0 0 16px #ff1e38;
+  animation: battleStrobe 0.25s infinite alternate;
+}
+
+.lamp-mode-battle .lamp-led-runner {
+  background: linear-gradient(90deg, #ff0000, #ff8800, #ffffff, #ff8800, #ff0000);
+  box-shadow: 0 0 20px #ff1e38;
+  animation: battleStrobe 0.2s infinite alternate;
+}
+
+.lamp-mode-battle .lamp-segment {
+  border-color: #ff8899;
+}
+
+.lamp-mode-battle .lamp-segment .segment-led-core {
+  background: #ff1e38;
+  box-shadow: 0 0 14px #ff1e38;
+  animation: battleStrobe 0.22s infinite alternate;
+}
+
+.lamp-mode-battle .lamp-center-shield {
+  background: linear-gradient(180deg, #ff99a8 0%, #991122 50%, #440008 100%);
+  filter: drop-shadow(0 0 10px #ff1e38);
+}
+
+.lamp-mode-battle .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 10%, #ff2244 55%, #880011 100%);
+  box-shadow: 0 0 18px #ff1e38;
+  animation: battleStrobe 0.18s infinite alternate;
+}
+
+@keyframes battleStrobe {
+  0% {
+    filter: brightness(0.9);
+    transform: scale(0.98);
+  }
+
+  100% {
+    filter: brightness(1.6);
+    transform: scale(1.02);
+  }
+}
+
+/* --- 5. PAYOUT (ベル獲得時: 黄色 / ゴールドフラッシュ) --- */
+.lamp-mode-payout .crown-prism-wing .wing-prism-bar {
+  background: linear-gradient(180deg, #fff088 0%, #ff9900 100%);
+  box-shadow: 0 0 18px #ffdf6b;
+  animation: payoutFlash 0.3s infinite alternate;
+}
+
+.lamp-mode-payout .lamp-led-runner {
+  background: linear-gradient(90deg, #ffaa00, #ffffff, #ffaa00);
+  box-shadow: 0 0 16px #ffffff;
+}
+
+.lamp-mode-payout .lamp-segment .segment-led-core {
+  background: #ffee55;
+  box-shadow: 0 0 14px #ffffff;
+  animation: payoutFlash 0.25s infinite alternate;
+}
+
+.lamp-mode-payout .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 20%, #ffcc00 65%, #ff6600 100%);
+  box-shadow: 0 0 18px #ffffff;
+}
+
+/* --- 5b. PAYOUT-REPLAY (リプレイ獲得時: 青色フラッシュ) --- */
+.lamp-mode-payout-replay .crown-prism-wing .wing-prism-bar {
+  background: linear-gradient(180deg, #93c5fd 0%, #1d4ed8 100%);
+  box-shadow: 0 0 18px #3b82f6;
+  animation: payoutFlash 0.3s infinite alternate;
+}
+
+.lamp-mode-payout-replay .lamp-led-runner {
+  background: linear-gradient(90deg, #0055ff, #e0f2fe, #0055ff);
+  box-shadow: 0 0 16px #60a5fa;
+}
+
+.lamp-mode-payout-replay .lamp-segment .segment-led-core {
+  background: #38bdf8;
+  box-shadow: 0 0 14px #60a5fa;
+  animation: payoutFlash 0.25s infinite alternate;
+}
+
+.lamp-mode-payout-replay .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 15%, #3b82f6 65%, #1e3a8a 100%);
+  box-shadow: 0 0 18px #60a5fa;
+}
+
+/* --- 5c. PAYOUT-CHERRY (チェリー獲得時: 赤色フラッシュ) --- */
+.lamp-mode-payout-cherry .crown-prism-wing .wing-prism-bar {
+  background: linear-gradient(180deg, #ff8899 0%, #cc0022 100%);
+  box-shadow: 0 0 18px #ff1e38;
+  animation: payoutFlash 0.3s infinite alternate;
+}
+
+.lamp-mode-payout-cherry .lamp-led-runner {
+  background: linear-gradient(90deg, #cc0022, #ffccd5, #cc0022);
+  box-shadow: 0 0 16px #ff4466;
+}
+
+.lamp-mode-payout-cherry .lamp-segment .segment-led-core {
+  background: #ff2244;
+  box-shadow: 0 0 14px #ff6677;
+  animation: payoutFlash 0.25s infinite alternate;
+}
+
+.lamp-mode-payout-cherry .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 15%, #ff1e38 65%, #880015 100%);
+  box-shadow: 0 0 18px #ff4466;
+}
+
+/* --- 5d. PAYOUT-MELON (スイカ獲得時: 緑色フラッシュ) --- */
+.lamp-mode-payout-melon .crown-prism-wing .wing-prism-bar {
+  background: linear-gradient(180deg, #86efac 0%, #15803d 100%);
+  box-shadow: 0 0 18px #22c55e;
+  animation: payoutFlash 0.3s infinite alternate;
+}
+
+.lamp-mode-payout-melon .lamp-led-runner {
+  background: linear-gradient(90deg, #16a34a, #dcfce7, #16a34a);
+  box-shadow: 0 0 16px #4ade80;
+}
+
+.lamp-mode-payout-melon .lamp-segment .segment-led-core {
+  background: #22c55e;
+  box-shadow: 0 0 14px #4ade80;
+  animation: payoutFlash 0.25s infinite alternate;
+}
+
+.lamp-mode-payout-melon .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 15%, #22c55e 65%, #14532d 100%);
+  box-shadow: 0 0 18px #4ade80;
+}
+
+/* --- 6. RAINBOW (WIN成立・継続ジャッジ成功・大当り時: 超ド派手レインボーストロボ) --- */
+.lamp-mode-rainbow {
+  animation: rainbowBorderGlow 0.35s infinite alternate;
+}
+
+.lamp-mode-rainbow .crown-prism-wing .wing-prism-bar {
+  animation: rainbowHue 0.35s infinite linear;
+}
+
+.lamp-mode-rainbow .lamp-led-runner {
+  background: linear-gradient(90deg, #ff0000, #ff8800, #ffee00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+  background-size: 300% 100%;
+  animation: runnerChase 0.4s linear infinite, rainbowHue 0.35s infinite linear;
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-0 .segment-led-core {
+  background: #ff0000;
+  box-shadow: 0 0 12px #ff0000;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-1 .segment-led-core {
+  background: #ff6600;
+  box-shadow: 0 0 12px #ff6600;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-2 .segment-led-core {
+  background: #ffcc00;
+  box-shadow: 0 0 12px #ffcc00;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-3 .segment-led-core {
+  background: #00dd55;
+  box-shadow: 0 0 12px #00dd55;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-4 .segment-led-core {
+  background: #00f0ff;
+  box-shadow: 0 0 12px #00f0ff;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-5 .segment-led-core {
+  background: #0077ff;
+  box-shadow: 0 0 12px #0077ff;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-6 .segment-led-core {
+  background: #8800ff;
+  box-shadow: 0 0 12px #8800ff;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-7 .segment-led-core {
+  background: #ff00aa;
+  box-shadow: 0 0 12px #ff00aa;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-8 .segment-led-core {
+  background: #ff0044;
+  box-shadow: 0 0 12px #ff0044;
+}
+
+.lamp-mode-rainbow .lamp-segment.seg-9 .segment-led-core {
+  background: #ffffff;
+  box-shadow: 0 0 12px #ffffff;
+}
+
+.lamp-mode-rainbow .lamp-center-shield {
+  animation: rainbowShield 0.35s infinite alternate;
+}
+
+.lamp-mode-rainbow .shield-led-core {
+  background: linear-gradient(180deg, #ffffff 20%, #ffea00 55%, #ff0055 100%);
+  animation: rainbowHue 0.3s infinite linear;
+  box-shadow: 0 0 22px #ffffff;
+}
+
+@keyframes rainbowHue {
+  0% {
+    filter: hue-rotate(0deg) brightness(1.2);
+  }
+
+  100% {
+    filter: hue-rotate(360deg) brightness(1.6);
+  }
+}
+
+@keyframes rainbowShield {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px #ff0055);
+  }
+
+  100% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 14px #00ffff);
+  }
+}
+
+@keyframes rainbowBorderGlow {
+  0% {
+    box-shadow: 0 0 20px rgba(255, 0, 100, 0.8), inset 0 3px 6px #ffffff;
+  }
+
+  100% {
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.9), inset 0 3px 6px #ffffff;
+  }
+}
+
+/* =========================================================
+   2. UPPER LCD SCREEN (大型メイン液晶)
+   ========================================================= */
+.upper-lcd-frame {
+  height: 255px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #11141e 0%, #22293b 50%, #0f121a 100%);
+  border-top: 3px solid #4a5778;
+  border-bottom: 3px solid #283042;
+  padding: 4px 6px;
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.95),
+    0 4px 10px rgba(0, 0, 0, 0.85);
+  position: relative;
+  transition: filter 0.2s ease;
+}
+
+.upper-lcd-frame.screen-flash {
+  filter: brightness(1.7) contrast(1.25);
+}
+
+.lcd-corner-screw {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--chrome-steel);
+  position: absolute;
+  z-index: 10;
+  box-shadow: inset 0 1px 1px #fff, 0 1px 2px #000;
+}
+
+.lcd-corner-screw.top-left,
+.lcd-corner-screw.tl {
+  top: 6px;
+  left: 8px;
+}
+
+.lcd-corner-screw.top-right,
+.lcd-corner-screw.tr {
+  top: 6px;
+  right: 8px;
+}
+
+.lcd-corner-screw.btm-left,
+.lcd-corner-screw.bl {
+  bottom: 6px;
+  left: 8px;
+}
+
+.lcd-corner-screw.btm-right,
+.lcd-corner-screw.br {
+  bottom: 6px;
+  right: 8px;
+}
+
+.upper-lcd-display {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border: 2px solid #323b50;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* LCD Bottom Action Navi */
+.lcd-navi-strip {
+  height: 26px;
+  background: rgba(5, 8, 14, 0.96);
+  border-top: 1px solid #283348;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 5;
+}
+
+/* =========================================================
+   LCD SETTINGS VIEW (銀色ボタンで液晶全面に切り替わる設定画面)
+   ※ ダイアログ風ではなく、液晶ディスプレイそのものの計器画面モード
+   ========================================================= */
+.lcd-settings-view {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(14, 22, 38, 0.98) 0%, rgba(4, 7, 13, 0.99) 80%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0px, rgba(0, 0, 0, 0.25) 2px, transparent 2px, transparent 4px);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  animation: lcdSettingsFade 0.15s ease;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+@keyframes lcdSettingsFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.settings-grid {
+  width: 100%;
+  max-width: 330px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  background: linear-gradient(90deg, rgba(22, 31, 47, 0.85) 0%, rgba(12, 17, 27, 0.85) 100%);
+  border: 1px solid #324462;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.settings-label {
+  font-size: 0.72rem;
+  font-weight: 1000;
+  color: #d6e3f8;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 6px rgba(120, 170, 255, 0.45);
+}
+
+.settings-val-badge {
+  min-width: 50px;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 1000;
+  color: #ffd700;
+  background: linear-gradient(180deg, #2e2410 0%, #151107 100%);
+  border: 1.5px solid #d4af37;
+  border-radius: 4px;
+  padding: 3px 12px;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.45), inset 0 1px 0 rgba(255, 235, 150, 0.25);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.75);
+}
+
+.settings-btn-group {
+  display: flex;
+  gap: 6px;
+}
+
+.settings-opt-btn {
+  min-width: 48px;
+  padding: 4px 12px;
+  font-size: 0.66rem;
+  font-weight: 1000;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  background: linear-gradient(180deg, #1b2333 0%, #0d121c 100%);
+  border: 1.5px solid #33435c;
+  color: #657799;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.settings-opt-btn:active {
+  transform: translateY(1px);
+}
+
+.settings-opt-btn.active {
+  background: linear-gradient(180deg, #008cd4 0%, #004992 100%);
+  border-color: #00f0ff;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.8);
+}
+
+.navi-text {
+  font-size: 0.74rem;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  color: #4fe2ff;
+  text-shadow: 0 0 8px rgba(79, 226, 255, 0.85);
+}
+
+.navi-text.gold {
+  color: #ffcf48;
+  text-shadow: 0 0 8px rgba(255, 207, 72, 0.85);
+}
+
+.navi-text.blink {
+  animation: blinkNavi 0.7s infinite;
+}
+
+.navi-text.danger-pulse {
+  color: #ff3344;
+  text-shadow: 0 0 10px #ff3344;
+  animation: blinkNavi 0.35s infinite;
+}
+
+@keyframes blinkNavi {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* =========================================================
+   3. REEL SECTION (3 Reels + BATTLE MODE Lamp + 押し順ナビランプ + MAX BET)
+   ========================================================= */
+.reel-deck-housing {
+  height: 180px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #181d2a 0%, #0d1017 100%);
+  border-bottom: 3px solid #2b3346;
+  padding: 4px 6px;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.95);
+}
+
+.reel-deck-content {
+  height: 100%;
+  display: flex;
+  gap: 7px;
+  align-items: stretch;
+}
+
+/* Center: 3 Reels */
+.center-reel-unit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.reel-window-bezel {
+  height: 138px;
+  background: #060910;
+  border: 3.5px solid #485773;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 16px 22px rgba(0, 0, 0, 0.98),
+    inset 0 -16px 22px rgba(0, 0, 0, 0.98),
+    0 2px 6px rgba(0, 0, 0, 0.85);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top and Bottom Real Visors / Hoods */
+.reel-visor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.reel-visor.top-visor {
+  top: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reel-visor.btm-visor {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.75) 0%, transparent 100%);
+}
+
+.reel-glass-surface {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(180deg, #0d131f 0%, #151f33 50%, #0d131f 100%);
+}
+
+/* Diagonal Glass Reflection Streak */
+.reel-glass-streak {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 45%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Red Center Payline */
+.center-payline {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+  border-top: 1.5px solid rgba(255, 50, 50, 0.65);
+  border-bottom: 1.5px solid rgba(255, 50, 50, 0.65);
+  background: rgba(255, 0, 0, 0.04);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* 大当たり成立時のリール枠・ペイライン・図柄の激しいフラッシュ演出 */
+.reel-window-bezel.bonus-jackpot-active {
+  border-color: #ffd700;
+  box-shadow:
+    0 0 25px rgba(255, 215, 0, 0.9),
+    inset 0 0 20px rgba(255, 30, 60, 0.7),
+    inset 0 16px 22px rgba(0, 0, 0, 0.98),
+    inset 0 -16px 22px rgba(0, 0, 0, 0.98);
+  animation: reelJackpotRainbow 1.2s linear infinite;
+}
+
+@keyframes reelJackpotRainbow {
+  0% {
+    border-color: #ffd700;
+    box-shadow: 0 0 22px #ffbb00, inset 0 0 15px #ff2244;
+  }
+
+  33% {
+    border-color: #ff3366;
+    box-shadow: 0 0 25px #ff1e38, inset 0 0 18px #ffea00;
+  }
+
+  66% {
+    border-color: #00f0ff;
+    box-shadow: 0 0 22px #00e5ff, inset 0 0 15px #ff3366;
+  }
+
+  100% {
+    border-color: #ffd700;
+    box-shadow: 0 0 22px #ffbb00, inset 0 0 15px #ff2244;
+  }
+}
+
+.reel-window-bezel.bonus-jackpot-active .center-payline {
+  border-top: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255, 230, 0, 0.35) 0%, rgba(255, 0, 50, 0.15) 100%);
+  box-shadow: 0 0 16px #ffea00, 0 0 28px #ff3300;
+  animation: paylineJackpotPulse 0.4s infinite alternate;
+}
+
+@keyframes paylineJackpotPulse {
+  0% {
+    filter: brightness(1);
+    opacity: 0.85;
+  }
+
+  100% {
+    filter: brightness(1.6);
+    opacity: 1;
+  }
+}
+
+.reel-window-bezel.bonus-jackpot-active .reel-drum {
+  animation: drumSevenGlow 0.5s infinite alternate;
+}
+
+@keyframes drumSevenGlow {
+  0% {
+    filter: drop-shadow(0 0 8px rgba(255, 20, 50, 0.8));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 22px rgba(255, 220, 0, 1)) brightness(1.2);
+  }
+}
+
+.center-payline::before,
+.center-payline::after {
+  content: "◀";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.52rem;
+  color: rgba(255, 60, 60, 0.95);
+}
+
+.center-payline::before {
+  left: 4px;
+}
+
+.center-payline::after {
+  right: 4px;
+  content: "▶";
+}
+
+.reels-trio {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.reel-column {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Chrome separator pillar between drums */
+.reel-column:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(90deg, #101622 0%, #a4b2c6 50%, #101622 100%);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+  z-index: 6;
+}
+
+/* リールドラム: 暗め背景＋薄青いバックライト光 (指示要件) */
+.reel-drum {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(0, 160, 255, 0.3) 0%, rgba(7, 16, 32, 0.95) 65%, #040814 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0px, rgba(0, 0, 0, 0.25) 2px, transparent 2px, transparent 4px);
+  border: 1px solid #18263e;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow:
+    inset 0 16px 18px rgba(0, 0, 0, 0.9),
+    inset 0 -16px 18px rgba(0, 0, 0, 0.9),
+    inset 0 0 14px rgba(0, 180, 255, 0.22);
+  overflow: hidden;
+  position: relative;
+  padding: 1px 0;
+  height: 100%;
+}
+
+.reel-drum.spinning {
+  animation: reelSpinFast 0.08s linear infinite;
+  filter: blur(2.5px);
+}
+
+.reel-drum.bounce-stop {
+  animation: reelStopBounce 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.35);
+}
+
+@keyframes reelStopBounce {
+  0% {
+    transform: translateY(0);
+  }
+
+  35% {
+    transform: translateY(6px);
+  }
+
+  70% {
+    transform: translateY(-2.5px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes reelSpinFast {
+  0% {
+    transform: translateY(-8px);
+  }
+
+  50% {
+    transform: translateY(8px);
+  }
+
+  100% {
+    transform: translateY(-8px);
+  }
+}
+
+/* 押すべきリールの強調枠 (イエローゴールド発光フレーム & ネオンパルス) */
+.target-glow-frame {
+  position: absolute;
+  inset: -1px;
+  border: 2.5px solid #ffea00;
+  border-radius: 5px;
+  box-shadow:
+    0 0 14px rgba(255, 234, 0, 0.95),
+    0 0 26px rgba(255, 170, 0, 0.7),
+    inset 0 0 12px rgba(255, 234, 0, 0.5);
+  pointer-events: none;
+  z-index: 10;
+  animation: reelTargetPulse 0.35s infinite alternate;
+}
+
+@keyframes reelTargetPulse {
+  0% {
+    border-color: #ffea00;
+    box-shadow:
+      0 0 10px rgba(255, 234, 0, 0.85),
+      0 0 20px rgba(255, 170, 0, 0.5),
+      inset 0 0 8px rgba(255, 234, 0, 0.4);
+    opacity: 0.9;
+  }
+
+  100% {
+    border-color: #ffffff;
+    box-shadow:
+      0 0 20px #ffea00,
+      0 0 34px #ff9900,
+      inset 0 0 16px rgba(255, 240, 100, 0.75);
+    opacity: 1;
+  }
+}
+
+/* 押すべきリール自体のドラム内部: バックライトを明るく照らし黄色味を強調 */
+.reel-drum.drum-target-lit {
+  border-color: #ffea00;
+  filter: brightness(1.35) saturate(1.25);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(255, 234, 0, 0.45) 0%, rgba(0, 160, 255, 0.35) 45%, rgba(7, 16, 32, 0.9) 75%, #040814 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0px, rgba(0, 0, 0, 0.25) 2px, transparent 2px, transparent 4px);
+  box-shadow:
+    inset 0 16px 18px rgba(0, 0, 0, 0.9),
+    inset 0 -16px 18px rgba(0, 0, 0, 0.9),
+    inset 0 0 22px rgba(255, 234, 0, 0.55);
+}
+
+/* 待機リール自体のドラム内部: 控えめな照明にしてターゲットを際立たせる */
+.reel-drum.drum-wait-dim {
+  filter: brightness(0.72) contrast(0.92);
+  opacity: 0.85;
+}
+
+/* リールドラムセル (見切れのない完璧な均等高さ) */
+.drum-cell {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+.symbol-svg {
+  width: 90%;
+  height: 38px;
+  object-fit: contain;
+  display: block;
+}
+
+.drum-cell.center {
+  z-index: 2;
+}
+
+.drum-cell.center .symbol-svg {
+  transform: scale(1.06);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95));
+}
+
+.drum-cell.top,
+.drum-cell.bottom {
+  opacity: 0.52;
+  filter: blur(0.4px);
+  transform: scaleY(0.92);
+}
+
+/* 薄青いバックライト */
+.symbol-backlight {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.4) 0%, rgba(0, 130, 255, 0.15) 55%, transparent 75%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Reel Bottom Bar: Mini LED Segments */
+.reel-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 2px;
+  margin-top: 2px;
+}
+
+/* MAX BET Button */
+.max-bet-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.retry-speech-bubble {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  right: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: linear-gradient(180deg, #fffbeb 0%, #fef08a 100%);
+  color: #7c2d12;
+  border: 2px solid #f59e0b;
+  border-radius: 10px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.75), 0 0 12px rgba(251, 191, 36, 0.65);
+  animation: retryBubbleFloat 0.75s ease-in-out infinite alternate;
+}
+
+.retry-speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 30px;
+  border-width: 8px 7px 0 7px;
+  border-style: solid;
+  border-color: #f59e0b transparent transparent transparent;
+}
+
+.retry-speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 32px;
+  border-width: 6px 5px 0 5px;
+  border-style: solid;
+  border-color: #fef08a transparent transparent transparent;
+}
+
+.retry-bubble-text {
+  font-size: 0.7rem;
+  font-weight: 1000;
+  letter-spacing: 0.03em;
+  display: block;
+  line-height: 1.15;
+}
+
+@keyframes retryBubbleFloat {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-4px);
+  }
+}
+
+.max-bet-btn {
+  width: 76px;
+  height: 28px;
+  background: radial-gradient(ellipse at 50% 30%, #ff3b5a 0%, #aa0f28 70%, #5e0816 100%);
+  border: 2.5px solid #94a4c2;
+  border-radius: 14px;
+  box-shadow: 0 3px 0 #3a0812, 0 4px 8px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s ease;
+}
+
+.max-bet-btn .bet-text {
+  font-size: 0.6rem;
+  font-weight: 1000;
+  color: #fff;
+  line-height: 1.05;
+  text-shadow: 0 1px 2px #000;
+}
+
+.max-bet-btn.pulse-glow {
+  box-shadow: 0 3px 0 #3a0812, 0 0 14px rgba(255, 60, 90, 0.95);
+  animation: pulse 0.6s infinite alternate;
+}
+
+.max-bet-btn.active-press,
+.max-bet-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #3a0812, 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Mini LED Segments */
+.mini-led-seg-box {
+  display: flex;
+  gap: 8px;
+  background: #080b12;
+  border: 1px solid #273145;
+  border-radius: 4px;
+  padding: 2px 8px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.mini-seg {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.mini-seg .lbl {
+  font-size: 0.52rem;
+  font-weight: 900;
+  color: #647596;
+}
+
+.mini-seg .val {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.mini-seg .val.green {
+  color: var(--green-led);
+  text-shadow: 0 0 6px rgba(44, 230, 116, 0.8);
+}
+
+.mini-seg .val.red {
+  color: var(--red-led);
+  text-shadow: 0 0 6px var(--red-led-glow);
+}
+
+.mini-seg .val.red.payout-flash {
+  animation: payoutFlash 0.3s infinite alternate;
+}
+
+.mini-seg .val.amber {
+  color: var(--amber-led);
+  text-shadow: 0 0 6px rgba(255, 170, 34, 0.8);
+}
+
+@keyframes payoutFlash {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.15);
+    opacity: 0.7;
+    color: #ffea70;
+    text-shadow: 0 0 12px #ffea70;
+  }
+}
+
+/* =========================================================
+   Right: BATTLE MODE Lamp & 押し順ナビランプ ユニット (幅広・高品位)
+   ========================================================= */
+.right-status-deck {
+  width: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3px;
+  background-color: #0b0f17;
+  background-image: url('/reel_side_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 2px solid #334460;
+  border-radius: 6px;
+  padding: 2px 2px 4px;
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.95),
+    0 2px 5px rgba(0, 0, 0, 0.85);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 上部: 大型 BATTLE MODE ランプ (画像生成パネル・余計な外枠なしで余白を活かし最大化) */
+.battle-mode-emblem {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.battle-mode-emblem .bm-emblem-frame {
+  width: min(100cqw, calc(100cqh * 646 / 1037));
+  height: min(100cqh, calc(100cqw * 1037 / 646));
+  border-radius: 50% / 31.2%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.battle-mode-emblem .bm-panel-img {
+  width: 138.7%;
+  height: 115.72%;
+  max-width: none;
+  flex-shrink: 0;
+  object-fit: fill;
+  display: block;
+  transition: opacity 0.25s ease;
+}
+
+.battle-mode-emblem.dormant {
+  opacity: 0.92;
+  filter: contrast(0.98) brightness(0.94) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
+}
+
+.battle-mode-emblem.lit-flame {
+  opacity: 1;
+  animation: battleModeFlame 0.35s infinite alternate;
+}
+
+@keyframes battleModeFlame {
+  0% {
+    transform: scale(1);
+    filter: brightness(1.02) saturate(1.1) drop-shadow(0 0 6px rgba(255, 45, 30, 0.95)) drop-shadow(0 0 14px rgba(255, 170, 0, 0.75));
+  }
+
+  100% {
+    transform: scale(1.03);
+    filter: brightness(1.18) saturate(1.25) drop-shadow(0 0 10px #ff2238) drop-shadow(0 0 20px #ffbb00);
+  }
+}
+
+/* 下部: ボタン押し順ナビランプ群 */
+.navi-lamp-console {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* 役ランプ: BELL / REP (最後のリールが停止してから対応する方を点灯) */
+.role-lamp-row {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.role-lamp {
+  flex: 1;
+  text-align: center;
+  font-size: 0.54rem;
+  font-weight: 1000;
+  padding: 3px 0;
+  border-radius: 3px;
+  border: 1px solid #253348;
+  background: rgba(11, 16, 24, 0.88);
+  color: #40506c;
+  transition: all 0.12s ease;
+}
+
+.role-lamp.bell-lamp.lit {
+  background: linear-gradient(180deg, #ffea75 0%, #ffaa00 100%);
+  border-color: #ffffff;
+  color: #000;
+  box-shadow: 0 0 12px #ffcc00, 0 0 20px #ff8800;
+  animation: pulse 0.25s infinite alternate;
+}
+
+.role-lamp.rep-lamp.lit {
+  background: linear-gradient(180deg, #7cf4ff 0%, #00b4d8 100%);
+  border-color: #ffffff;
+  color: #000;
+  box-shadow: 0 0 12px #00f0ff, 0 0 20px #0077b6;
+  animation: pulse 0.25s infinite alternate;
+}
+
+/* 3連押し順ナビセグメント (左・中・右) */
+.navi-order-segments {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.order-seg {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 0 4px;
+  border-radius: 3px;
+  background: #080c14;
+  border: 1px solid #1a2536;
+  transition: all 0.12s ease;
+}
+
+.order-seg .seg-label {
+  font-size: 0.44rem;
+  font-weight: 900;
+  color: #586b86;
+  line-height: 1;
+}
+
+.order-seg .seg-num {
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 1000;
+  line-height: 1;
+  margin-top: 2px;
+  color: #28374d;
+}
+
+/* 次に押すターゲットリール */
+.order-seg.target {
+  background: linear-gradient(180deg, #ffcc00 0%, #ff8800 100%);
+  border-color: #fffae0;
+  box-shadow: 0 0 10px #ffaa00;
+  animation: pulse 0.25s infinite alternate;
+}
+
+.order-seg.target .seg-label {
+  color: #522c00;
+  font-weight: 1000;
+}
+
+.order-seg.target .seg-num {
+  color: #000000;
+  text-shadow: none;
+}
+
+/* 待機中のナビリール */
+.order-seg.wait {
+  background: #0a1626;
+  border-color: #00a6ff;
+}
+
+.order-seg.wait .seg-label {
+  color: #6db2ff;
+}
+
+.order-seg.wait .seg-num {
+  color: #00f0ff;
+  text-shadow: 0 0 6px #00f0ff;
+}
+
+/* ディスプレイ右下 AUTO 直置き表示 */
+.raw-lcd-auto-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.auto-raw-text {
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #00f0ff;
+  text-shadow:
+    0 1px 3px #000,
+    0 0 8px rgba(0, 240, 255, 0.9),
+    1px 1px 0 #000,
+    -1px -1px 0 #000;
+  animation: autoPulseSlow 1.8s ease-in-out infinite alternate;
+}
+
+.auto-raw-text.fast {
+  color: #ff9900;
+  text-shadow:
+    0 1px 3px #000,
+    0 0 8px rgba(255, 153, 0, 0.9),
+    1px 1px 0 #000,
+    -1px -1px 0 #000;
+}
+
+@keyframes autoPulseSlow {
+  0% {
+    opacity: 0.95;
+    filter: brightness(1.1);
+  }
+
+  100% {
+    opacity: 0.2;
+    filter: brightness(0.7);
+  }
+}
+
+/* =========================================================
+   4. MID CONTROL DECK (手前にせり出すスラント操作卓 & 新設コントロール)
+   ========================================================= */
+.mid-control-deck {
+  height: 132px;
+  flex-shrink: 0;
+  background:
+    linear-gradient(180deg, #374158 0%, #1c2230 40%, #121620 75%, #0a0c12 100%);
+  border-top: 3.5px solid #7281a6;
+  border-bottom: 4px solid #141822;
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 255, 0.28),
+    0 10px 20px rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 12px 6px;
+  position: relative;
+  z-index: 6;
+}
+
+/* スラント上段 (中央寄り: 角丸四角CHANCE / 右寄せ: 光沢シルバー設定ボタン & MAX BET) */
+.mid-deck-upper-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 50px;
+  position: relative;
+  z-index: 2;
+  padding: 0 4px;
+}
+
+.upper-ctrl-chance-slot {
+  position: absolute;
+  left: 138px;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upper-ctrl-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 銀色の丸い設定ボタン (MENU / CONFIG) */
+.silver-menu-btn {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  outline: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: transform 0.08s ease;
+}
+
+.silver-btn-rim {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: conic-gradient(from 135deg,
+      #cfd8ea 0deg,
+      #ffffff 45deg,
+      #5f6c82 90deg,
+      #abb7cc 180deg,
+      #ffffff 225deg,
+      #4a5468 270deg,
+      #cfd8ea 360deg);
+  border: 1px solid #ffffff;
+  box-shadow:
+    0 3px 0 #0d1017,
+    0 4px 8px rgba(0, 0, 0, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  display: grid;
+  place-items: center;
+  padding: 2.5px;
+}
+
+.silver-btn-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 42%),
+    linear-gradient(145deg, #f8fafd 0%, #dce3ef 28%, #b4c0d4 52%, #edf2f9 76%, #8e9cb4 100%);
+  border: 1px solid #e2e8f4;
+  box-shadow:
+    inset 0 1px 3px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 2px rgba(60, 74, 98, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.silver-btn-icon {
+  font-size: 0.72rem;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.75)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+.silver-menu-btn:active,
+.silver-menu-btn.active {
+  transform: translateY(2px);
+}
+
+.silver-menu-btn.active .silver-btn-rim {
+  box-shadow: 0 1px 0 #0d1017, 0 0 12px #00f0ff;
+  border-color: #00f0ff;
+}
+
+/* =========================================================
+   小型化・収まりを最適化した円形物理CHANCEボタン
+   ========================================================= */
+.physical-chance-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  outline: none;
+  transition: transform 0.08s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+  position: relative;
+  padding: 0;
+}
+
+/* コンパクトサイズ (角丸四角形・やや大きめ) */
+.physical-chance-btn.compact .chance-metallic-ring {
+  width: 96px;
+  height: 44px;
+  border-radius: 11px;
+  padding: 2.5px;
+  box-shadow:
+    0 3px 0 #0d1017,
+    0 5px 10px rgba(0, 0, 0, 0.85),
+    inset 0 1px 2px rgba(255, 255, 255, 0.95);
+}
+
+.physical-chance-btn.compact .chance-inner-bezel {
+  border-radius: 8.5px;
+  padding: 2px;
+}
+
+.physical-chance-btn.compact .chance-resin-cover {
+  border-radius: 6.5px;
+}
+
+.physical-chance-btn.compact .chance-light-core {
+  border-radius: 6.5px;
+}
+
+.physical-chance-btn.compact .chance-btn-text {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.physical-chance-btn.compact .chance-specular-lens {
+  top: 2px;
+  left: 8px;
+  right: 8px;
+  height: 11px;
+  border-radius: 6px;
+}
+
+.physical-chance-btn.compact.chance-pressed,
+.physical-chance-btn.compact:active {
+  transform: translateY(2.5px);
+}
+
+.physical-chance-btn.compact.chance-pressed .chance-metallic-ring,
+.physical-chance-btn.compact:active .chance-metallic-ring {
+  box-shadow: 0 1px 0 #0d1017, 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* 外周メタリックリング (多段クロームベゼル) */
+.chance-metallic-ring {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: conic-gradient(from 135deg,
+      #cfd8ea 0deg,
+      #ffffff 45deg,
+      #5f6c82 90deg,
+      #abb7cc 180deg,
+      #ffffff 225deg,
+      #4a5468 270deg,
+      #cfd8ea 360deg);
+  border: 1.5px solid #ffffff;
+  box-shadow:
+    0 5px 0 #0d1017,
+    0 8px 16px rgba(0, 0, 0, 0.9),
+    inset 0 2px 3px rgba(255, 255, 255, 0.95);
+  display: grid;
+  place-items: center;
+  padding: 3.5px;
+}
+
+/* 内側面取りベゼル */
+.chance-inner-bezel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1b202c 0%, #3a445a 50%, #11151e 100%);
+  border: 1.5px solid #283042;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85);
+  display: grid;
+  place-items: center;
+  padding: 2.5px;
+}
+
+/* 透明感のある樹脂カバー (通常時: 非発光の落ち着いたオレンジ) */
+.chance-resin-cover {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 45% 35%, #d96b1a 0%, #9a3c0c 58%, #4e1c05 100%);
+  border: 1px solid #c96d32;
+  box-shadow:
+    inset 0 3px 6px rgba(255, 220, 180, 0.22),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+/* 球面上部の光沢ハイライト */
+.chance-specular-lens {
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  right: 12px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* 中央立体「CHANCE」文字 (通常時は非発光) */
+.chance-btn-text {
+  font-size: 0.68rem;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  color: #f3d2b3;
+  text-shadow: 0 1px 2px #2b0f03;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+/* 発光時コア */
+.chance-light-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+/* --- CHANCEボタン 押すべきタイミングのみ発光 (ブライトオレンジ・ゴールド) --- */
+.physical-chance-btn.illuminated .chance-resin-cover {
+  background: radial-gradient(circle at 45% 35%, #fff0a8 0%, #ff8c00 48%, #e64a00 88%, #9e2200 100%);
+  border-color: #ffe08a;
+  box-shadow:
+    inset 0 0 14px #fff8dc,
+    0 0 24px rgba(255, 140, 0, 0.95);
+}
+
+.physical-chance-btn.illuminated .chance-btn-text {
+  color: #ffffff;
+  text-shadow: 0 0 10px #ffffff, 0 0 16px #ffb74d, 0 2px 4px #4a1800;
+}
+
+.physical-chance-btn.pulse-red .chance-metallic-ring {
+  box-shadow:
+    0 3px 0 #4a1c00,
+    0 0 22px #ff8c00,
+    0 0 42px rgba(255, 115, 0, 0.78);
+  animation: chancePulseStrobe 0.4s infinite alternate;
+}
+
+@keyframes chancePulseStrobe {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+
+  100% {
+    transform: scale(1.05);
+    filter: brightness(1.35);
+  }
+}
+
+/* クロームアクセントモール (スラント段差ライン) */
+.mid-deck-slant-line {
+  position: absolute;
+  top: 58px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #242c3e 0%, #8d9bb5 30%, #ffffff 50%, #8d9bb5 70%, #242c3e 100%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* =========================================================
+   下段: レバー (立体黒丸ノブのみ) & 3つのSTOPボタン
+   ========================================================= */
+.mid-deck-lower-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: relative;
+  z-index: 2;
+}
+
+/* レバー埋め込みソケット (棒なし・丸い窪みに光沢黒丸ノブ) */
+.lever-dock {
+  width: 58px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lever-socket-recess {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0a0d14 35%, #181e2b 85%, #2a3346 100%);
+  border: 2px solid #3c4862;
+  box-shadow:
+    inset 0 4px 8px rgba(0, 0, 0, 0.98),
+    0 2px 4px rgba(255, 255, 255, 0.1);
+  display: grid;
+  place-items: center;
+}
+
+.arcade-lever-knob-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  outline: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: transform 0.08s ease;
+}
+
+/* 立体感のある先端の黒丸ノブ (光沢スフィア) */
+.arcade-lever-knob {
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle at 35% 30%, #7c89a4 0%, #283142 45%, #0d1117 75%, #05070a 100%);
+  border: 2px solid #8493b0;
+  border-radius: 50%;
+  box-shadow:
+    0 5px 10px rgba(0, 0, 0, 0.95),
+    inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+/* レバーON可能時 (ノブが脈動発光) */
+.arcade-lever-knob-btn.ready .arcade-lever-knob {
+  border-color: #ff4466;
+  box-shadow:
+    0 5px 10px rgba(0, 0, 0, 0.95),
+    0 0 16px #ff2244;
+  animation: pulse 0.55s infinite alternate;
+}
+
+/* 操作時: 下に少し沈み込む (ずれる) 演出 */
+.arcade-lever-knob-btn.pushed,
+.arcade-lever-knob-btn:active:not(:disabled) {
+  transform: translateY(5px);
+}
+
+.arcade-lever-knob-btn.pushed .arcade-lever-knob,
+.arcade-lever-knob-btn:active:not(:disabled) .arcade-lever-knob {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.9),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+/* =========================================================
+   STOPボタンの品質向上 (外周メッキリング・内側透明赤樹脂・リングLED)
+   ========================================================= */
+.stop-buttons-dock {
+  display: flex;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+/* 埋め込みソケット */
+.stop-button-socket {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0e121a 45%, #242c3e 90%, #343e56 100%);
+  border: 2px solid #3c4862;
+  box-shadow:
+    inset 0 4px 8px rgba(0, 0, 0, 0.95),
+    0 2px 4px rgba(255, 255, 255, 0.1);
+  display: grid;
+  place-items: center;
+}
+
+.arcade-stop-btn {
+  width: 48px;
+  height: 48px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition: transform 0.08s ease;
+  padding: 0;
+}
+
+/* 外周クロームメッキベゼルリング */
+.btn-chrome-ring {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: conic-gradient(from 135deg,
+      #cfd8ea 0deg,
+      #ffffff 45deg,
+      #5f6c82 90deg,
+      #abb7cc 180deg,
+      #ffffff 225deg,
+      #4a5468 270deg,
+      #cfd8ea 360deg);
+  border: 1.5px solid #ffffff;
+  box-shadow:
+    0 4px 0 #0d1017,
+    0 6px 12px rgba(0, 0, 0, 0.9),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+/* 内側LEDリング */
+.stop-led-ring {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+/* ボタン本体: 消灯時も艶やかな深紅のクリア樹脂レンズ */
+.btn-inner-light {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ruby-glass);
+  border: 1.5px solid #ff7788;
+  box-shadow:
+    inset 0 3px 6px rgba(255, 255, 255, 0.45),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.85);
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+/* レンズ上部の光沢反射 */
+.btn-specular-reflection {
+  position: absolute;
+  top: 3px;
+  left: 8px;
+  right: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* --- STOPボタン 停止可能時 (激しい赤色パルスストロボ発光) --- */
+.arcade-stop-btn.lit-glow .btn-chrome-ring {
+  box-shadow:
+    0 4px 0 #4a0812,
+    0 0 18px #ff1e38,
+    0 0 30px rgba(255, 30, 56, 0.75);
+  animation: stopBlinkRed 0.38s infinite alternate;
+}
+
+.arcade-stop-btn.lit-glow .stop-led-ring {
+  border-color: #ffaabb;
+  box-shadow: 0 0 8px #ff2244;
+}
+
+.arcade-stop-btn.lit-glow .btn-inner-light {
+  background: radial-gradient(circle at 45% 35%, #ffffff 0%, #ff556b 40%, #d80020 80%, #77000d 100%);
+  border-color: #ffffff;
+  box-shadow:
+    inset 0 0 10px #ffffff,
+    0 0 14px #ff3355;
+}
+
+@keyframes stopBlinkRed {
+  0% {
+    transform: translateY(0);
+    filter: brightness(0.95);
+  }
+
+  100% {
+    transform: translateY(-1.5px);
+    filter: brightness(1.35);
+  }
+}
+
+/* --- STOPボタン 押すべきターゲット時 (イエローゴールド発光＆パルス) --- */
+.arcade-stop-btn.target-glow .btn-chrome-ring {
+  box-shadow:
+    0 4px 0 #543900,
+    0 0 20px #ffea00,
+    0 0 35px rgba(255, 200, 0, 0.85);
+  animation: stopTargetPulse 0.35s infinite alternate;
+}
+
+.arcade-stop-btn.target-glow .stop-led-ring {
+  border-color: #ffffff;
+  box-shadow: 0 0 12px #ffea00;
+}
+
+.arcade-stop-btn.target-glow .btn-inner-light {
+  background: radial-gradient(circle at 45% 35%, #ffffff 0%, #ffea00 45%, #ff9900 80%, #774400 100%);
+  border-color: #ffffff;
+  box-shadow:
+    inset 0 0 12px #ffffff,
+    0 0 18px #ffea00;
+}
+
+@keyframes stopTargetPulse {
+  0% {
+    transform: translateY(0);
+    filter: brightness(1);
+  }
+
+  100% {
+    transform: translateY(-2px);
+    filter: brightness(1.4);
+  }
+}
+
+/* 押下時沈み込み (2〜3px 沈む) */
+.arcade-stop-btn.pressed-down,
+.arcade-stop-btn:active:not(:disabled) {
+  transform: translateY(3px);
+}
+
+.arcade-stop-btn.pressed-down .btn-chrome-ring,
+.arcade-stop-btn:active:not(:disabled) .btn-chrome-ring {
+  box-shadow:
+    0 1px 0 #0d1017,
+    0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* 停止後の状態 (消灯して沈み込みキープ) */
+.arcade-stop-btn.is-stopped {
+  transform: translateY(2.5px);
+  filter: brightness(0.7);
+}
+
+.arcade-stop-btn.is-stopped .btn-chrome-ring {
+  box-shadow: 0 1.5px 0 #0d1017, 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* =========================================================
+   5. BELLY GLASS PANEL (下部アクリルパネルアート + スリット電飾バー)
+   ========================================================= */
+.belly-glass-section {
+  flex: 1;
+  min-height: 138px;
+  max-height: 190px;
+  background: #080a10;
+  border-bottom: 3px solid #232938;
+  position: relative;
+  overflow: hidden;
+}
+
+.belly-glass-housing {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  padding: 4px 6px;
+  position: relative;
+}
+
+/* Left & Right Vertical LED Bars (横スリットレンズカット入り・上部トップランプと完全同期) */
+.side-led-bar {
+  width: 16px;
+  border-radius: 4px;
+  opacity: 0.95;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* スリットレンズカット表現 */
+.side-led-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, 0.45) 0px,
+      rgba(0, 0, 0, 0.45) 3px,
+      transparent 3px,
+      transparent 6px);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* モード同期: ready (通常待機時: アメジストパープル) */
+.side-led-bar.mode-ready {
+  background: linear-gradient(180deg, #a855f7 0%, #4c1d95 50%, #a855f7 100%);
+  border: 1.5px solid #d8b4fe;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+}
+
+/* モード同期: lever (レバー待機時: プラチナホワイト) */
+.side-led-bar.mode-lever {
+  background: linear-gradient(180deg, #ffffff 0%, #64748b 50%, #ffffff 100%);
+  border: 1.5px solid #f8fafc;
+  box-shadow: 0 0 12px rgba(248, 250, 252, 0.8);
+  animation: pulse 0.5s infinite alternate;
+}
+
+/* モード同期: spin (スピン時: バイオレット＆ホワイト) */
+.side-led-bar.mode-spin {
+  background: linear-gradient(180deg, #e9d5ff 0%, #6b21a8 50%, #e9d5ff 100%);
+  border: 1.5px solid #f3e8ff;
+  box-shadow: 0 0 14px rgba(192, 132, 252, 0.85);
+}
+
+/* モード同期: payout (ベル獲得時: 黄色フラッシュ) */
+.side-led-bar.mode-payout {
+  background: linear-gradient(180deg, #ffffff 0%, #ffea00 40%, #ff8800 100%);
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 0 20px #ffea00, 0 0 35px #ffaa00;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+/* モード同期: payout-replay (リプレイ獲得時: 青色フラッシュ) */
+.side-led-bar.mode-payout-replay {
+  background: linear-gradient(180deg, #e0f2fe 0%, #3b82f6 40%, #1d4ed8 100%);
+  border: 1.5px solid #bfdbfe;
+  box-shadow: 0 0 20px #3b82f6, 0 0 35px #2563eb;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+/* モード同期: payout-cherry (チェリー獲得時: 赤色フラッシュ) */
+.side-led-bar.mode-payout-cherry {
+  background: linear-gradient(180deg, #ffd6dc 0%, #ff1e38 40%, #990018 100%);
+  border: 1.5px solid #ff99aa;
+  box-shadow: 0 0 20px #ff1e38, 0 0 35px #cc0022;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+/* モード同期: payout-melon (スイカ獲得時: 緑色フラッシュ) */
+.side-led-bar.mode-payout-melon {
+  background: linear-gradient(180deg, #dcfce7 0%, #22c55e 40%, #15803d 100%);
+  border: 1.5px solid #bbf7d0;
+  box-shadow: 0 0 20px #22c55e, 0 0 35px #16a34a;
+  animation: sideLedPayoutFlash 0.18s infinite alternate;
+}
+
+@keyframes sideLedPayoutFlash {
+  0% {
+    filter: brightness(1);
+  }
+
+  100% {
+    filter: brightness(1.7);
+    box-shadow: 0 0 26px #ffffff, 0 0 45px #ffcc00;
+  }
+}
+
+/* モード同期: battle (バトル中炎レッド・オレンジ) */
+.side-led-bar.mode-battle {
+  background: linear-gradient(180deg, #ff2200 0%, #cc0033 50%, #ff5500 100%);
+  border: 1.5px solid #ff9955;
+  box-shadow: 0 0 18px rgba(255, 34, 0, 0.95);
+  animation: pulse 0.3s infinite alternate;
+}
+
+/* モード同期: rainbow (勝利時レインボーフラッシュ) */
+.side-led-bar.mode-rainbow {
+  background: linear-gradient(180deg, #ff0055 0%, #ffbb00 25%, #00ffaa 50%, #00ccff 75%, #aa00ff 100%);
+  background-size: 100% 200%;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 0 22px rgba(255, 255, 255, 0.9);
+  animation: sideLedRainbow 1s linear infinite;
+}
+
+@keyframes sideLedRainbow {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  100% {
+    background-position: 0% 200%;
+  }
+}
+
+/* Belly Glass Artwork Window */
+.belly-glass-window {
+  flex: 1;
+  margin: 0 6px;
+  border: 2px solid #3c4760;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.95);
+  isolation: isolate;
+}
+
+.belly-art-img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  z-index: 0;
+}
+
+.glass-reflection {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.05) 30%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.08) 100%);
+  pointer-events: none;
+}
+
+/* =========================================================
+   6. BOTTOM CABINET DECK (一体型下部ユニット: 縦型スピーカー & 排出口 & ドル箱10×2 & リム)
+   ========================================================= */
+.bottom-cabinet-deck {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #1b2130 0%, #10141e 55%, #07090e 100%);
+  border-top: 2px solid #434e68;
+  display: flex;
+  flex-direction: column;
+  padding: 2px 6px 3px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.14);
+  position: relative;
+}
+
+.bottom-unit-core {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  height: 118px;
+}
+
+/* 左右：縦型スリムスピーカー (パンチングメタル＋奥のコーン＋金属フレーム) */
+.bottom-speaker {
+  width: 30px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #2b3346 0%, #181e2c 50%, #10141e 100%);
+  border: 1.5px solid #495672;
+  border-radius: 4px;
+  padding: 3px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.22),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.85),
+    0 1px 3px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.speaker-mount-screw {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #e5ecf8 0%, #7d8ba6 55%, #2a3242 100%);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.9);
+  flex-shrink: 0;
+}
+
+.speaker-mesh-grill {
+  flex: 1;
+  width: 100%;
+  margin: 2px 0;
+  border-radius: 2.5px;
+  border: 1px solid #596786;
+  background: #07090e;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.95);
+}
+
+/* グリルの奥にある暗いスピーカーコーンの立体陰影 */
+.speaker-cone-shadow {
+  position: absolute;
+  inset: 2px;
+  border-radius: 2px;
+  background:
+    radial-gradient(ellipse at 50% 35%, #1c2436 0%, #0b0f18 58%, #040509 100%),
+    radial-gradient(ellipse at 50% 68%, #1a2132 0%, #090c14 55%, #040509 100%);
+  opacity: 0.92;
+}
+
+/* 細かいパンチングメタル状グリル */
+.speaker-perforation {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(2, 4, 8, 0.95) 1px, transparent 1.25px),
+    radial-gradient(circle, rgba(2, 4, 8, 0.95) 1px, transparent 1.25px);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  background-color: rgba(110, 125, 155, 0.22);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.9);
+}
+
+/* 中央エリア：奥壁組み込み排出口モールド ＋ 立体下皿 (固定筐体) */
+.bottom-center-bay {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.medal-tray-unit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 0;
+}
+
+.tray-upper-surround {
+  height: 2px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #0b0e16 0%, #242d40 100%);
+  border-top: 1px solid #06080c;
+  border-left: 1px solid #2b354b;
+  border-right: 1px solid #2b354b;
+  border-radius: 3px 3px 0 0;
+}
+
+/* 3D受け皿本体（奥壁・左右側壁・底面） */
+.tray-3d-basin {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: #111622;
+  border-left: 1.5px solid #3c4966;
+  border-right: 1.5px solid #3c4966;
+  overflow: hidden;
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, 0.82);
+}
+
+/* 奥壁（上部排出口モールドから深い底面へ落ち込む背面壁） */
+.tray-back-wall {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(180deg, #0f1420 0%, #1c2436 44%, #171f2e 84%, #0d121c 100%);
+  border-bottom: 1px solid #080b12;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 2;
+  box-shadow:
+    inset 0 -6px 10px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.65);
+}
+
+/* 奥壁上部に組み込まれた排出口モールド */
+.tray-chute-recess {
+  width: 88px;
+  height: 19px;
+  margin-top: 1px;
+  background: linear-gradient(180deg, #080b12 0%, #121824 100%);
+  border: 1px solid #2a344b;
+  border-top-color: #06080d;
+  border-radius: 2px 2px 3px 3px;
+  box-shadow:
+    inset 0 4px 7px rgba(0, 0, 0, 0.95),
+    0 2px 4px rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.tray-chute-baffle {
+  width: 78px;
+  height: 3px;
+  margin-top: 1px;
+  background: linear-gradient(180deg, #1e2638 0%, #0b0f18 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 3;
+}
+
+.tray-chute-throat {
+  width: 70px;
+  height: 9px;
+  background: linear-gradient(180deg, #000000 0%, #020306 75%, #0c1019 100%);
+  border-left: 3px solid #283248;
+  border-right: 3px solid #283248;
+  box-shadow:
+    inset 0 5px 8px #000000,
+    inset 2px 0 4px rgba(0, 0, 0, 0.9),
+    inset -2px 0 4px rgba(0, 0, 0, 0.9);
+  z-index: 2;
+}
+
+.tray-chute-slide {
+  width: 76px;
+  height: 4px;
+  background: linear-gradient(180deg, #182030 0%, #2c374f 55%, #1a2232 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0 0 2px 2px;
+  z-index: 2;
+}
+
+/* 左右の高い側壁 (深い底面へ落ち込む立体ウォール) */
+.tray-side-wall {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.tray-side-wall.left {
+  left: 0;
+  clip-path: polygon(0 0, 26px 39px, 12px 100%, 0 100%);
+  background: linear-gradient(100deg, #435372 0%, #273248 54%, #121825 100%);
+  box-shadow: inset -2px 0 6px rgba(0, 0, 0, 0.65);
+}
+
+.tray-side-wall.right {
+  right: 0;
+  clip-path: polygon(100% 0, 4px 39px, 18px 100%, 100% 100%);
+  background: linear-gradient(260deg, #394763 0%, #212a3d 54%, #101622 100%);
+  box-shadow: inset 2px 0 6px rgba(0, 0, 0, 0.65);
+}
+
+/* 深い位置にある下皿の底面 */
+.tray-floor {
+  position: absolute;
+  top: 38px;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  background: linear-gradient(180deg,
+      #111724 0%,
+      #1f293d 42%,
+      #2a364e 78%,
+      #182031 100%);
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* 精密な底面滑り止めリブ・モールド溝 */
+.tray-floor-grooves {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 55%,
+      rgba(180, 205, 255, 0.08) 0%,
+      rgba(140, 170, 220, 0.02) 52%,
+      transparent 80%),
+    repeating-linear-gradient(0deg,
+      rgba(0, 0, 0, 0.28) 0px,
+      rgba(0, 0, 0, 0.28) 1px,
+      rgba(255, 255, 255, 0.03) 1px,
+      rgba(255, 255, 255, 0.03) 4px);
+  pointer-events: none;
+}
+
+.tray-floor-shadow {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.68) 0%, transparent 28%, rgba(0, 0, 0, 0.68) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.48) 0%, transparent 15%, transparent 85%, rgba(0, 0, 0, 0.48) 100%);
+  pointer-events: none;
+}
+
+/* 手前に高く立ち上がる下皿の前壁・縁 (半透明スモークアクリルの深い固定フロントパネル) */
+.tray-protruding-lip {
+  position: absolute;
+  bottom: 0;
+  left: -2px;
+  right: -2px;
+  height: 68px;
+  background:
+    linear-gradient(118deg,
+      rgba(255, 255, 255, 0.11) 0%,
+      rgba(255, 255, 255, 0.03) 26%,
+      transparent 44%,
+      rgba(255, 255, 255, 0.05) 68%,
+      transparent 82%),
+    linear-gradient(180deg,
+      rgba(130, 152, 190, 0.88) 0%,
+      rgba(74, 92, 126, 0.62) 10%,
+      rgba(32, 43, 64, 0.46) 24%,
+      rgba(20, 28, 44, 0.48) 68%,
+      rgba(11, 16, 26, 0.72) 100%);
+  backdrop-filter: blur(1px);
+  border-top: 2px solid #b8cae8;
+  border-left: 1.5px solid rgba(108, 128, 166, 0.88);
+  border-right: 1.5px solid rgba(108, 128, 166, 0.88);
+  border-bottom: 1.5px solid #06080d;
+  border-radius: 3px 3px 7px 7px;
+  box-shadow:
+    0 -4px 10px rgba(0, 0, 0, 0.52),
+    0 4px 10px rgba(0, 0, 0, 0.92),
+    inset 0 2px 3px rgba(255, 255, 255, 0.34),
+    inset 1px 0 0 rgba(190, 212, 255, 0.16),
+    inset -1px 0 0 rgba(190, 212, 255, 0.16),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.72);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 7px;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.tray-lip-top-bevel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(180deg,
+      rgba(218, 232, 255, 0.36) 0%,
+      rgba(130, 154, 198, 0.18) 55%,
+      rgba(10, 14, 24, 0.25) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+
+.tray-lip-scoop {
+  position: relative;
+  width: 88px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(16, 22, 34, 0.9) 0%, rgba(56, 70, 98, 0.88) 100%);
+  border: 1px solid rgba(150, 174, 215, 0.22);
+  box-shadow:
+    inset 0 1.5px 2.5px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.18);
+  z-index: 2;
+}
+
+/* 最下部：薄型の筐体前面リム (Front Rim) */
+.tray-front-bezel {
+  height: 13px;
+  margin-top: 2px;
+  background: linear-gradient(180deg, #3a4660 0%, #1e2536 52%, #0c1018 100%);
+  border: 1px solid #4d5b7a;
+  border-top-color: #6c7ca2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  position: relative;
+  border-radius: 3px 3px 8px 8px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.24),
+    0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+.tray-rim-rivet {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #eef4ff 0%, #8696b4 60%, #2b3344 100%);
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.9);
+}
+
+.tray-logo-text {
+  font-size: 0.45rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #93a7c9;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22), 0 -1px 1px #000000;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN (PC, タブレット, スマホ横画面)
+   ========================================================= */
+
+/* スマホ横画面 (例: 844x390, 932x430) */
+@media (orientation: landscape) and (max-height: 550px) {
+  .cabinet-scale-stage {
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    justify-content: center;
+  }
+
+  .pachislot-cabinet {
+    width: 100%;
+    max-width: 680px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 40px 1fr 42px;
+    height: 100dvh;
+    transform: none !important;
+  }
+
+  .top-crown {
+    grid-column: 1 / -1;
+    height: 40px;
+  }
+
+  .crown-prism-wing {
+    width: 30px;
+  }
+
+  .upper-lcd-frame {
+    grid-column: 1;
+    grid-row: 2;
+    height: 100%;
+  }
+
+  .reel-deck-housing {
+    grid-column: 2;
+    grid-row: 2;
+    height: 140px;
+  }
+
+  .mid-control-deck {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 140px;
+    height: 116px;
+  }
+
+  .belly-glass-section {
+    display: none;
+    /* スマホ横ではリールと操作卓を優先 */
+  }
+}
+
+/* タブレット・PC (画面幅が大きい場合) */
+@media (min-width: 768px) and (min-height: 700px) {
+  .cabinet-wrapper {
+    background: radial-gradient(circle at 50% 30%, #1f2538 0%, #06070a 100%);
+  }
+
+  .pachislot-cabinet {
+    border-radius: 12px;
+    box-shadow: 0 10px 80px rgba(0, 0, 0, 0.98), 0 0 40px rgba(0, 180, 255, 0.15);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.98);
+    opacity: 0.85;
+  }
+
+  100% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+ * Cherry Role Visual Effect (0.85s, Red-Gold Flash + Beams + CHERRY!)
+ * ========================================================= */
+.cherry-effect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cherry-flash-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%,
+      rgba(255, 224, 102, 0.92) 0%,
+      rgba(239, 68, 68, 0.72) 45%,
+      rgba(185, 28, 28, 0.45) 100%);
+  animation:
+    cherryFlashFade 0.55s ease-out forwards,
+    cherryAuraPulse 1.1s ease-in-out 0.55s infinite alternate;
+}
+
+.cherry-shockwave {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 4px solid #fde047;
+  box-shadow:
+    0 0 28px rgba(251, 191, 36, 0.95),
+    inset 0 0 22px rgba(239, 68, 68, 0.9);
+  animation: cherryShockwaveExpand 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cherry-lightning-beams {
+  position: absolute;
+  inset: -25%;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(254, 240, 138, 0.75) 0deg 4deg,
+      transparent 4deg 20deg,
+      rgba(248, 113, 113, 0.55) 20deg 23deg,
+      transparent 23deg 36deg);
+  mix-blend-mode: screen;
+  animation: cherryBeamsSpin 2.6s linear infinite;
+}
+
+.cherry-floating-symbol,
+.melon-floating-symbol {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: symbolAnnouncementPop 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.symbol-svg.announcement-symbol-svg {
+  width: clamp(96px, 28vw, 134px);
+  height: auto;
+  animation: symbolAnnouncementFloat 1.8s ease-in-out infinite;
+}
+
+.symbol-svg.cherry-announcement-symbol {
+  filter:
+    drop-shadow(0 0 16px rgba(251, 191, 36, 0.92))
+    drop-shadow(0 0 8px rgba(239, 68, 68, 0.85))
+    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+}
+
+.symbol-svg.melon-announcement-symbol {
+  filter:
+    drop-shadow(0 0 16px rgba(134, 239, 172, 0.95))
+    drop-shadow(0 0 8px rgba(34, 197, 94, 0.85))
+    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+}
+
+@keyframes symbolAnnouncementPop {
+  0% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes symbolAnnouncementFloat {
+  0%, 100% {
+    transform: translateY(-6px) scale(1);
+  }
+
+  50% {
+    transform: translateY(6px) scale(1.04);
+  }
+}
+
+@keyframes cherryFlashFade {
+  0% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 0.28;
+  }
+}
+
+@keyframes cherryAuraPulse {
+  0% {
+    opacity: 0.24;
+  }
+
+  100% {
+    opacity: 0.42;
+  }
+}
+
+@keyframes cherryShockwaveExpand {
+  0% {
+    transform: scale(0.25);
+    opacity: 1;
+  }
+
+  65% {
+    transform: scale(3.2);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: scale(4.2);
+    opacity: 0;
+  }
+}
+
+@keyframes cherryBeamsSpin {
+  0% {
+    transform: scale(1.05) rotate(0deg);
+    opacity: 0.72;
+  }
+
+  50% {
+    transform: scale(1.15) rotate(180deg);
+    opacity: 0.88;
+  }
+
+  100% {
+    transform: scale(1.05) rotate(360deg);
+    opacity: 0.72;
+  }
+}
+
+@keyframes cherryBannerPop {
+  0% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cherryBannerGlow {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+
+  100% {
+    transform: scale(1.04);
+    filter: brightness(1.18);
+  }
+}
+
+/* =========================================================
+ * Session Expired Notice Overlay
+ * ========================================================= */
+.session-expired-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  background: rgba(5, 8, 18, 0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+
+.session-expired-card {
+  width: 100%;
+  max-width: 310px;
+  background: linear-gradient(180deg, #161f33 0%, #0b101d 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.7);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.session-expired-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #fde68a;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
+
+.session-expired-desc {
+  margin: 0 0 12px;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.session-expired-btn {
+  appearance: none;
+  border: 1px solid rgba(253, 224, 71, 0.85);
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.session-expired-btn:active {
+  transform: scale(0.97);
+}
+
+/* =========================================================
+ * Cherry Spin Suggestion & Reel Focus Mode
+ * ========================================================= */
+.reel-window-bezel.cherry-focus-mode .reel-glass-surface {
+  background: rgba(2, 4, 10, 0.72);
+}
+
+.reel-window-bezel.cherry-focus-mode .drum-cell {
+  opacity: 0.25;
+  filter: brightness(0.38) saturate(0.7);
+  transition: opacity 0.18s ease, filter 0.18s ease, transform 0.18s ease;
+}
+
+.reel-window-bezel.cherry-focus-mode .drum-cell.center.cherry-symbol-lit {
+  position: relative;
+  z-index: 4;
+  opacity: 1;
+  transform: scale(1.12);
+  filter:
+    brightness(1.35) drop-shadow(0 0 10px rgba(255, 50, 85, 0.95)) drop-shadow(0 0 18px rgba(255, 215, 0, 0.85));
+}
+
+.reel-window-bezel.cherry-focus-mode .drum-cell.center.cherry-symbol-lit .symbol-backlight {
+  opacity: 1;
+  background: radial-gradient(circle,
+      rgba(255, 225, 110, 0.85) 0%,
+      rgba(255, 35, 80, 0.6) 46%,
+      transparent 74%);
+}
+
+/* =========================================================
+ * Single Cherry Whole-Cabinet Flash Effect
+ * ========================================================= */
+.pachislot-cabinet.cabinet-cherry-flash {
+  animation: cabinetCherryPulse 0.95s ease-out forwards;
+}
+
+.pachislot-cabinet.cabinet-cherry-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 95;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 42%,
+      rgba(255, 240, 140, 0.72) 0%,
+      rgba(255, 45, 85, 0.45) 55%,
+      rgba(255, 215, 0, 0.35) 100%);
+  mix-blend-mode: screen;
+  animation: cabinetCherryOverlayFlash 0.95s ease-out forwards;
+}
+
+@keyframes cabinetCherryPulse {
+  0% {
+    box-shadow: 0 0 80px rgba(255, 40, 80, 1), 0 0 120px rgba(255, 215, 0, 0.95);
+    filter: brightness(1.45);
+  }
+
+  25% {
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.95), 0 0 90px rgba(255, 40, 80, 0.85);
+    filter: brightness(1.15);
+  }
+
+  50% {
+    box-shadow: 0 0 75px rgba(255, 40, 80, 0.95), 0 0 110px rgba(255, 215, 0, 0.9);
+    filter: brightness(1.35);
+  }
+
+  100% {
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.98);
+    filter: brightness(1);
+  }
+}
+
+@keyframes cabinetCherryOverlayFlash {
+  0% {
+    opacity: 0.95;
+  }
+
+  25% {
+    opacity: 0.3;
+  }
+
+  45% {
+    opacity: 0.85;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+   DEV DEBUG PANELS (PC開発環境・左右余白のみ)
+   ========================================================= */
+.debug-panel {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 236px;
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(16, 20, 30, 0.92);
+  border: 1px solid rgba(120, 140, 180, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  color: #e6ebf5;
+  font-size: 13px;
+  line-height: 1.45;
+  cursor: default;
+  z-index: 40;
+}
+
+.debug-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #9fb3d9;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(120, 140, 180, 0.25);
+}
+
+.debug-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.debug-field:last-child {
+  margin-bottom: 0;
+}
+
+.debug-field-label {
+  font-size: 12px;
+  color: #b8c4dc;
+}
+
+.debug-select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(140, 160, 200, 0.4);
+  background: #0d111a;
+  color: #f0f4fc;
+  font-size: 13px;
+}
+
+.debug-status-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.debug-status-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.debug-status-row dt {
+  font-size: 11px;
+  color: #93a3c2;
+}
+
+.debug-status-row dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f3f6fc;
+}
+
+/* =========================================================
+ * 「BARを狙え！」カットイン演出
+ * ========================================================= */
+.bar-aim-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 46;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bar-aim-bg-flare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%,
+      rgba(250, 204, 21, 0.35) 0%,
+      rgba(220, 38, 38, 0.42) 55%,
+      rgba(15, 23, 42, 0.72) 100%);
+  animation: cherryAuraPulse 0.65s ease-in-out infinite alternate;
+}
+
+.bar-aim-speed-lines {
+  position: absolute;
+  inset: -20%;
+  background: repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(254, 240, 138, 0.38) 0deg 3deg,
+      transparent 3deg 16deg,
+      rgba(248, 113, 113, 0.25) 16deg 19deg,
+      transparent 19deg 32deg);
+  mix-blend-mode: screen;
+  animation: cherryBeamsSpin 2.2s linear infinite;
+}
+
+.bar-aim-cutin-band {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 10px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(90deg,
+      rgba(127, 29, 29, 0.2) 0%,
+      rgba(153, 27, 27, 0.94) 18%,
+      rgba(185, 28, 28, 0.96) 50%,
+      rgba(153, 27, 27, 0.94) 82%,
+      rgba(127, 29, 29, 0.2) 100%);
+  border-top: 3px solid #fde047;
+  border-bottom: 3px solid #fde047;
+  box-shadow:
+    0 0 28px rgba(250, 204, 21, 0.7),
+    inset 0 0 18px rgba(254, 240, 138, 0.35);
+  animation:
+    cherryBannerPop 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    cherryBannerGlow 0.75s ease-in-out 0.28s infinite alternate;
+}
+
+.bar-aim-kicker {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  color: #fef08a;
+  text-shadow: 0 1px 4px #000;
+}
+
+.bar-aim-main-text {
+  font-family: Impact, 'Arial Black', 'Hiragino Kaku Gothic ProN', sans-serif;
+  font-size: clamp(1.45rem, 5.2vw, 2.15rem);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  background: linear-gradient(180deg, #ffffff 10%, #fef08a 52%, #f59e0b 95%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.95)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95));
+}
+
+.bar-aim-symbols-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.bar-aim-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #1e293b 0%, #020617 100%);
+  border: 1.5px solid #fde047;
+  color: #fef08a;
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.7);
+}
+
+/* リール窓のBAR揃いフォーカス */
+.reel-window-bezel.bar-focus-mode .reel-glass-surface {
+  background: rgba(2, 4, 12, 0.74);
+}
+
+.reel-window-bezel.bar-focus-mode .drum-cell {
+  opacity: 0.24;
+  filter: brightness(0.4) saturate(0.7);
+  transition: opacity 0.18s ease, filter 0.18s ease, transform 0.18s ease;
+}
+
+.reel-window-bezel.bar-focus-mode .drum-cell.center.bar-symbol-lit {
+  position: relative;
+  z-index: 4;
+  opacity: 1;
+  transform: scale(1.14);
+  filter:
+    brightness(1.38) drop-shadow(0 0 12px rgba(250, 204, 21, 0.98)) drop-shadow(0 0 22px rgba(244, 114, 182, 0.85));
+}
+
+.reel-window-bezel.bar-focus-mode .drum-cell.center.bar-symbol-lit .symbol-backlight {
+  opacity: 1;
+  background: radial-gradient(circle,
+      rgba(254, 240, 138, 0.92) 0%,
+      rgba(236, 72, 153, 0.55) 48%,
+      transparent 74%);
+}
+
+/* プレミアムBAR揃い時の筐体全体フラッシュ（2.4秒多段ストロボ） */
+.pachislot-cabinet.cabinet-premium-flash {
+  animation: cabinetPremiumPulse 2.4s ease-out forwards;
+}
+
+.pachislot-cabinet.cabinet-premium-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 95;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 42%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(250, 204, 21, 0.65) 40%,
+      rgba(56, 189, 248, 0.45) 75%,
+      rgba(236, 72, 153, 0.35) 100%);
+  mix-blend-mode: screen;
+  animation: cabinetPremiumStrobe 2.4s ease-out forwards;
+}
+
+@keyframes cabinetPremiumPulse {
+  0% {
+    box-shadow: 0 0 110px rgba(255, 255, 255, 1), 0 0 160px rgba(250, 204, 21, 1);
+    filter: brightness(1.75);
+  }
+
+  12% {
+    box-shadow: 0 0 55px rgba(56, 189, 248, 0.9), 0 0 90px rgba(250, 204, 21, 0.8);
+    filter: brightness(1.1);
+  }
+
+  24% {
+    box-shadow: 0 0 105px rgba(250, 204, 21, 1), 0 0 155px rgba(236, 72, 153, 1);
+    filter: brightness(1.65);
+  }
+
+  38% {
+    box-shadow: 0 0 60px rgba(250, 204, 21, 0.85), 0 0 100px rgba(56, 189, 248, 0.85);
+    filter: brightness(1.15);
+  }
+
+  52% {
+    box-shadow: 0 0 100px rgba(255, 255, 255, 0.95), 0 0 150px rgba(250, 204, 21, 0.95);
+    filter: brightness(1.55);
+  }
+
+  75% {
+    box-shadow: 0 0 75px rgba(250, 204, 21, 0.85), 0 0 120px rgba(236, 72, 153, 0.75);
+    filter: brightness(1.25);
+  }
+
+  100% {
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.98);
+    filter: brightness(1);
+  }
+}
+
+@keyframes cabinetPremiumStrobe {
+  0% {
+    opacity: 1;
+  }
+
+  10% {
+    opacity: 0.18;
+  }
+
+  20% {
+    opacity: 0.92;
+  }
+
+  32% {
+    opacity: 0.2;
+  }
+
+  44% {
+    opacity: 0.88;
+  }
+
+  58% {
+    opacity: 0.22;
+  }
+
+  72% {
+    opacity: 0.65;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+ * スイカ成立時エフェクト（エメラルドフラッシュ＋MELON!＋STOCK告知）
+ * ========================================================= */
+.melon-effect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.melon-flash-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%,
+      rgba(167, 243, 208, 0.88) 0%,
+      rgba(34, 197, 94, 0.68) 45%,
+      rgba(6, 95, 70, 0.45) 100%);
+  animation:
+    cherryFlashFade 0.55s ease-out forwards,
+    cherryAuraPulse 1.1s ease-in-out 0.55s infinite alternate;
+}
+
+.melon-shockwave {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 4px solid #86efac;
+  box-shadow:
+    0 0 28px rgba(34, 197, 94, 0.95),
+    inset 0 0 22px rgba(16, 185, 129, 0.9);
+  animation: cherryShockwaveExpand 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.melon-lightning-beams {
+  position: absolute;
+  inset: -25%;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(187, 247, 208, 0.72) 0deg 4deg,
+      transparent 4deg 20deg,
+      rgba(52, 211, 153, 0.52) 20deg 23deg,
+      transparent 23deg 36deg);
+  mix-blend-mode: screen;
+  animation: cherryBeamsSpin 2.6s linear infinite;
+}
+
+.melon-stock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 47;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.melon-stock-badge {
+  padding: 10px 22px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(160deg, rgba(6, 78, 59, 0.94), rgba(15, 23, 42, 0.94));
+  border: 2px solid #86efac;
+  box-shadow: 0 0 26px rgba(34, 197, 94, 0.92), inset 0 0 14px rgba(134, 239, 172, 0.3);
+  animation:
+    cherryBannerPop 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    cherryBannerGlow 0.8s ease-in-out 0.28s infinite alternate;
+}
+
+.melon-stock-kicker {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #bbf7d0;
+}
+
+.melon-stock-value {
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #fde047;
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.9), 0 2px 4px #000;
+}
+
+/* リール窓のスイカ揃いフォーカス */
+.reel-window-bezel.melon-focus-mode .reel-glass-surface {
+  background: rgba(2, 10, 6, 0.72);
+}
+
+.reel-window-bezel.melon-focus-mode .drum-cell {
+  opacity: 0.25;
+  filter: brightness(0.38) saturate(0.7);
+  transition: opacity 0.18s ease, filter 0.18s ease, transform 0.18s ease;
+}
+
+.reel-window-bezel.melon-focus-mode .drum-cell.center.melon-symbol-lit {
+  position: relative;
+  z-index: 4;
+  opacity: 1;
+  transform: scale(1.12);
+  filter:
+    brightness(1.35) drop-shadow(0 0 10px rgba(34, 197, 94, 0.95)) drop-shadow(0 0 18px rgba(167, 243, 208, 0.85));
+}
+
+.reel-window-bezel.melon-focus-mode .drum-cell.center.melon-symbol-lit .symbol-backlight {
+  opacity: 1;
+  background: radial-gradient(circle,
+      rgba(187, 247, 208, 0.85) 0%,
+      rgba(16, 185, 129, 0.6) 46%,
+      transparent 74%);
+}
+
+/* スイカストック当選時の筐体フラッシュ */
+.pachislot-cabinet.cabinet-melon-flash {
+  animation: cabinetMelonPulse 0.9s ease-out forwards;
+}
+
+.pachislot-cabinet.cabinet-melon-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 95;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 42%,
+      rgba(187, 247, 208, 0.72) 0%,
+      rgba(34, 197, 94, 0.45) 55%,
+      rgba(16, 185, 129, 0.35) 100%);
+  mix-blend-mode: screen;
+  animation: cabinetCherryOverlayFlash 0.9s ease-out forwards;
+}
+
+@keyframes cabinetMelonPulse {
+  0% {
+    box-shadow: 0 0 80px rgba(34, 197, 94, 1), 0 0 120px rgba(134, 239, 172, 0.95);
+    filter: brightness(1.42);
+  }
+
+  50% {
+    box-shadow: 0 0 70px rgba(16, 185, 129, 0.95), 0 0 105px rgba(187, 247, 208, 0.9);
+    filter: brightness(1.3);
+  }
+
+  100% {
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.98);
+    filter: brightness(1);
+  }
+}
