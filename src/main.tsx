@@ -1,10 +1,24 @@
+/**
+ * アプリ本体（App）: ゲーム進行の状態管理・操作ハンドラ・筐体全体の描画。
+ * 機能ごとの入口は docs/code-map.md を参照。UI 非依存の判定ロジックは src/engine.ts / src/game/ / src/battle/ / src/layout/ に置く。
+ *
+ * ファイル内の主な入口（関数名で検索）:
+ * - 進行シーン: Scene = bonusSpin → bonusGet → ready ⇄ lever → spinning → (battleModeIntro → BATTLE MODE 8G) → finished
+ * - 操作: onBet / onLever（抽選・レバーON時の告知・BATTLE MODE各GのSE/VOICE）/ onStop（押し順判定・払出し・ベル8回・8G終了後の分岐）
+ * - BATTLE MODE: onStartBattleAction（継続抽選）/ resolveFalseDefeatChance（CHANCE→復活 or 敗北）/ finishToNextRound / finishToGameOver
+ * - 入力経路: performPrimaryAction（どこでもタップ・Space/Enter）/ stopNextReel / AUTO PLAY Timer Logic / onChancePress / Keyboard shortcut
+ * - リセット: resetGameState / onRetry / resetForNewSession（30分放置のセッション切れ）
+ * - 演出トリガー: sound* / trigger*（SE・液晶エフェクト・筐体フラッシュ）
+ * - 開発用: window.__setBattleTest など（import.meta.env.DEV のみ）、DebugSettingsPanel / DebugStatusPanel
+ *
+ * 注意: scene 'battle' / 'battleResult' と onBattle / onNext は旧バトル方式の名残で、現在これらの scene へ遷移する経路はない。
+ */
 import { StrictMode, useEffect, useRef, useState, useCallback } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   BATTLE_PART_GAMES,
   BELLS_TO_BATTLE,
   calculateMedalPayout,
-  DEBUG_BATTLE_SCENARIOS,
   drawSettingIndex,
   drawSpin,
   getMissReels,
@@ -13,9 +27,8 @@ import {
   resolveBattleWithStock,
   resolveDebugBattleSelection,
   resolveTopLampMode,
-  SPIN_ROLES,
 } from './engine'
-import type { BattlePhase, BattleResult, DebugBattleScenarioId, NaviNumbers, NaviOrder, Scene, SpinOutcome, SpinOutcomeOptions, SymbolId } from './engine'
+import type { BattlePhase, BattleResult, DebugBattleScenarioId, NaviNumbers, NaviOrder, Scene, SpinOutcome, SymbolId } from './engine'
 import { ReelSymbolSvg } from './components/ReelSymbolSvg'
 import { BonusKakuteiDisplay } from './components/BonusKakuteiDisplay'
 import { BonusGetDisplay } from './components/BonusGetDisplay'
@@ -26,118 +39,19 @@ import { ZakoNaviDisplay } from './components/ZakoNaviDisplay'
 import { GameOverResultDisplay } from './components/GameOverResultDisplay'
 import { useBgm, type BgmTrack } from './bgm'
 import { preloadAllSe, playWavSe, playVoiceSe, stopVoiceSe, playCherrySe, playMelonSe, playBarAimSe, playPremiumBarFanfare, playBattleSe, suspendSeAudio, resumeSeAudio, type SeKey, type BattleSeType, type BattleSeOptions } from './se'
+import { BellyGlassPanel, BottomCabinetDeck, CabinetSideWing, TopCrown } from './components/cabinet/CabinetFrame'
+import { DebugSettingsPanel, DebugStatusPanel } from './components/cabinet/DebugPanels'
+import { LcdSettingsView } from './components/cabinet/LcdSettingsView'
+import { BarAimCutinOverlay, CherryEffectOverlay, MelonEffectOverlay, MelonStockBanner } from './components/cabinet/SmallRoleOverlays'
+import { resolveBattleLeverCue } from './battle/battleCues'
+import { resolveDebugSpinRequest } from './game/debugOptions'
+import { isNaviMissOnStop, pickBonusStopReel, pickNaviStopReel, resolveNaviReelDisplay, type ReelIndex } from './game/navi'
+import { resolveSceneBgmTrack } from './game/sceneBgm'
+import { computeCabinetLayout } from './layout/cabinetLayout'
 import './style.css'
 
 const START_REELS: [SymbolId, SymbolId, SymbolId] = ['seven', 'seven', 'seven']
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000 // 30分操作なしでセッション切れ扱い
-const CABINET_BASE_WIDTH = 440
-const CABINET_BASE_HEIGHT = 880
-const CABINET_COMPACT_MIN_HEIGHT = 680 // 下部トレー非表示 & 下パネル縮小時の最小論理高さ
-const CABINET_MAX_STRETCH_HEIGHT = 932 // 超縦長スマホで下パネルが最大(190px)まで伸びる上限論理高さ
-const MIN_CABINET_SCALE = 0.52
-const DESKTOP_MIN_CABINET_SCALE = 0.62
-const MOBILE_PORTRAIT_MAX_WIDTH = 767
-
-interface CabinetLayout {
-  scale: number
-  isLandscapeCompact: boolean
-  isMobilePortrait: boolean
-  isBottomCompact: boolean
-  needsScroll: boolean
-  sideSpace: number
-  stageWidth: number
-  stageHeight: number
-  cabinetHeight: number
-}
-
-function computeCabinetLayout(viewportWidth?: number, viewportHeight?: number): CabinetLayout {
-  if (typeof window === 'undefined') {
-    return {
-      scale: 1,
-      isLandscapeCompact: false,
-      isMobilePortrait: false,
-      isBottomCompact: false,
-      needsScroll: false,
-      sideSpace: 0,
-      stageWidth: CABINET_BASE_WIDTH,
-      stageHeight: CABINET_BASE_HEIGHT,
-      cabinetHeight: CABINET_BASE_HEIGHT,
-    }
-  }
-  const vv = window.visualViewport
-  const vw = viewportWidth ?? (vv ? vv.width : window.innerWidth)
-  const vh = viewportHeight ?? (vv ? vv.height : window.innerHeight)
-
-  if (vw > vh && vh <= 550) {
-    return {
-      scale: 1,
-      isLandscapeCompact: true,
-      isMobilePortrait: false,
-      isBottomCompact: false,
-      needsScroll: false,
-      sideSpace: 0,
-      stageWidth: CABINET_BASE_WIDTH,
-      stageHeight: Math.round(vh),
-      cabinetHeight: CABINET_BASE_HEIGHT,
-    }
-  }
-
-  // スマホ・狭幅縦画面: 縦横スクロールを出さず1画面に収め、余白が出たらサイドフレームで埋める
-  if (vw <= MOBILE_PORTRAIT_MAX_WIDTH) {
-    const widthScale = Math.min(1, vw / CABINET_BASE_WIDTH)
-    const availLogicalHeight = widthScale > 0 ? vh / widthScale : CABINET_BASE_HEIGHT
-    const isBottomCompact = availLogicalHeight < 840
-
-    let scale = widthScale
-    let cabinetHeight = CABINET_BASE_HEIGHT
-
-    if (!isBottomCompact) {
-      cabinetHeight = Math.round(Math.min(CABINET_MAX_STRETCH_HEIGHT, availLogicalHeight))
-      scale = Math.min(widthScale, vh / cabinetHeight)
-    } else if (availLogicalHeight >= CABINET_COMPACT_MIN_HEIGHT) {
-      cabinetHeight = Math.round(availLogicalHeight)
-      scale = widthScale
-    } else {
-      cabinetHeight = CABINET_COMPACT_MIN_HEIGHT
-      scale = Math.max(MIN_CABINET_SCALE, vh / cabinetHeight)
-    }
-
-    const stageWidth = Math.round(CABINET_BASE_WIDTH * scale)
-    const stageHeight = Math.min(Math.round(vh), Math.round(cabinetHeight * scale))
-    const sideSpace = Math.max(0, Math.floor((vw - stageWidth) / 2))
-
-    return {
-      scale,
-      isLandscapeCompact: false,
-      isMobilePortrait: true,
-      isBottomCompact,
-      needsScroll: false,
-      sideSpace,
-      stageWidth,
-      stageHeight,
-      cabinetHeight,
-    }
-  }
-
-  // PC・タブレット: 従来通り中央配置＋スケール制限
-  const rawScale = Math.min(1, vw / CABINET_BASE_WIDTH, vh / CABINET_BASE_HEIGHT)
-  const scale = Math.max(DESKTOP_MIN_CABINET_SCALE, rawScale)
-  const needsScroll = CABINET_BASE_HEIGHT * scale > vh + 1
-  const stageWidth = Math.round(CABINET_BASE_WIDTH * scale)
-  const stageHeight = Math.round(CABINET_BASE_HEIGHT * scale)
-  const sideSpace = Math.floor((vw - stageWidth) / 2)
-  return {
-    scale,
-    isLandscapeCompact: false,
-    isMobilePortrait: false,
-    isBottomCompact: false,
-    needsScroll,
-    sideSpace,
-    stageWidth,
-    stageHeight,
-    cabinetHeight: CABINET_BASE_HEIGHT,
-  }
-}
 
 function App() {
   const [scene, setScene] = useState<Scene>('bonusSpin')
@@ -201,22 +115,8 @@ function App() {
   const [naviAlert, setNaviAlert] = useState<string | null>(null) // 押し順失敗時の警告
   const [naviStep, setNaviStep] = useState(0)
 
-  // BGM Track determination:
-  // - bonusSpin: null (第1・第2リール停止時はSEのみ鳴らし、777が揃うまでBGMは鳴らさない)
-  // - bonusGet: 'opening' (777揃い後のBONUS GET演出用オープニング曲)
-  // - BATTLE MODE中 (battleModeIntro & isBattleModeのバトルパート全8G): 'battle' (bgm_battle.mp3)
-  // - 雑魚戦闘・小役パート (ready / lever / spinning): 'pre_battle' (bgm_pre_battle.mp3)
-  // - finished: 'gameover' (GAME OVER後からリトライまで)
-  const currentBgmTrack: BgmTrack =
-    scene === 'bonusSpin'
-      ? null
-      : scene === 'bonusGet'
-        ? 'opening'
-        : scene === 'finished'
-          ? 'gameover'
-          : isBattleMode || scene === 'battleModeIntro' || scene === 'battle' || scene === 'battleResult'
-            ? 'battle'
-            : 'pre_battle'
+  // シーン→BGM の対応表: src/game/sceneBgm.ts
+  const currentBgmTrack: BgmTrack = resolveSceneBgmTrack(scene, isBattleMode)
 
   // 設定画面 (menuOpen) が開いている時はBGM音量を半分に下げる / 別タブ表示中は自動ミュート
   const { unlockAudio } = useBgm(currentBgmTrack, effectiveMuted, menuOpen)
@@ -720,32 +620,10 @@ function App() {
     const forcedStock = import.meta.env.DEV ? forcedStockModeRef.current : 'auto'
     const forcedBarAim = import.meta.env.DEV ? forcedBarAimModeRef.current : 'auto'
 
-    let actualForcedRole: string | null = forcedRole
-    let spinOptions: SpinOutcomeOptions | undefined
-    if (import.meta.env.DEV) {
-      let forcedStockWon: boolean | undefined
-      if (forcedRole === 'melon:no_stock') {
-        actualForcedRole = 'melon'
-        forcedStockWon = false
-      } else if (forcedRole === 'melon:stock') {
-        actualForcedRole = 'melon'
-        forcedStockWon = true
-      } else if (forcedStock === 'win') {
-        forcedStockWon = true
-      } else if (forcedStock === 'lose') {
-        forcedStockWon = false
-      }
-
-      const forcedBarAimBool =
-        forcedBarAim === 'on' ? true : forcedBarAim === 'off' ? false : undefined
-
-      if (forcedStockWon !== undefined || forcedBarAimBool !== undefined) {
-        spinOptions = {
-          ...(forcedStockWon !== undefined ? { forcedStockWon } : {}),
-          ...(forcedBarAimBool !== undefined ? { forcedBarAim: forcedBarAimBool } : {}),
-        }
-      }
-    }
+    // デバッグパネルの強制指定 → 抽選オプション変換: src/game/debugOptions.ts
+    const { roleId: actualForcedRole, options: spinOptions } = import.meta.env.DEV
+      ? resolveDebugSpinRequest(forcedRole, forcedStock, forcedBarAim)
+      : { roleId: null, options: undefined }
 
     const outcome = drawSpin(rateIndex, Math.random, actualForcedRole, spinOptions)
     if (forcedRole !== null) {
@@ -794,44 +672,16 @@ function App() {
       }
 
       const curG = battleGameRef.current
-      const curPat = battleRef.current
-      const isHeroFirst = curPat === 'hero_attack'
       // このGで初回のレバーONのみ演出SE・エフェクトを再生する（リプレイ等で同じGを再回転した場合は鳴らさない）
       const isFirstSpinOfGame = !playedBattleFxGamesRef.current.has(curG)
       playedBattleFxGamesRef.current.add(curG)
       setBattleLeverFxArmed(isFirstSpinOfGame)
-      let battleVoiceKey: SeKey | null = null
-      let battleSeKey: BattleSeType | null = null
-      const attackSide: BattleSeOptions['side'] = isHeroFirst ? 'hero' : 'boss'
-
-      if (curG === 1) {
-        battleSeKey = 'standoff'
-      } else if (curG === 2) {
-        battleSeKey = 'tension'
-      } else if (curG === 3) {
-        battleVoiceKey = isHeroFirst ? 'voice_hero_provocation' : 'voice_boss_provocation'
-        battleSeKey = 'cut_in'
-      } else if (curG === 4) {
-        battleVoiceKey = isHeroFirst ? 'voice_hero_special_attack' : 'voice_boss_spacial_attack'
-        battleSeKey = 'charge'
-      } else if (curG === 5) {
-        battleSeKey = 'release'
-      } else if (curG === 6) {
-        if (curPat === 'ally_save') {
-          battleVoiceKey = 'voice_fellow'
-          battleSeKey = 'kai_arrive'
-        } else {
-          battleVoiceKey = isHeroFirst ? 'voice_boss_damage' : 'voice_hero_damage'
-          battleSeKey = 'heavy_hit'
-        }
-      } else if (curG === 7) {
-        battleSeKey = curPat === 'ally_save' ? 'kai_parry' : 'endure'
-      } else if (curG === 8) {
-        battleSeKey = curPat === 'ally_save' ? 'ally_afterglow' : 'endure_peak'
-      }
+      // G別の SE/VOICE 決定表: src/battle/battleCues.ts
+      const { seKey: battleSeKey, seOptions: battleSeOptions, voiceKey: battleVoiceKey } =
+        resolveBattleLeverCue(curG, battleRef.current)
 
       if (battleSeKey && isFirstSpinOfGame) {
-        soundBattleSe(battleSeKey, curG >= 3 && curG <= 5 ? { side: attackSide } : undefined)
+        soundBattleSe(battleSeKey, battleSeOptions)
       }
 
       if (battleVoiceKey && !playedBattleVoicesRef.current.has(battleVoiceKey)) {
@@ -1015,17 +865,17 @@ function App() {
     // - リプレイ時はゲーム内共通で押し順不問 (どの順番でも獲得可能)
     // - BATTLE MODE中のベル時は1つ目(第1停止)のみ正解すれば、残り2つは順不同で獲得可能
     // - 通常時(雑魚戦)のベル時は1〜3つ目すべて押し順通りの停止が必要
-    if (target.symbol === 'bell' && !target.isReplay) {
-      if (isBattleModeRef.current) {
-        if (naviStopCountRef.current === 0 && index !== currentNaviOrderRef.current[0]) {
-          isNaviFailedRef.current = true
-        }
-      } else {
-        const expectedReel = currentNaviOrderRef.current[naviStopCountRef.current]
-        if (index !== expectedReel) {
-          isNaviFailedRef.current = true
-        }
-      }
+    // （判定本体: src/game/navi.ts isNaviMissOnStop）
+    if (
+      isNaviMissOnStop({
+        target,
+        isBattleMode: isBattleModeRef.current,
+        stopCount: naviStopCountRef.current,
+        reelIndex: index,
+        naviOrder: currentNaviOrderRef.current,
+      })
+    ) {
+      isNaviFailedRef.current = true
     }
 
     // 小役パート（通常時）でベル成立かつ押し順正解時、1体ずつ撃破するごとに打撃ヒットSEと敵撃破ボイスを再生
@@ -1569,6 +1419,18 @@ function App() {
     setScene('ready')
   }, [soundChance, resolveNextBattle, round])
 
+  // 自動停止（オート・どこでもタップ・Space/Enter 共通）: ボーナス揃え中は左から順、通常は押し順ナビに従う
+  // 停止リールの選択: src/game/navi.ts
+  const stopNextReel = useCallback(() => {
+    const targetReel =
+      sceneRef.current === 'bonusSpin'
+        ? pickBonusStopReel(stoppedRef.current)
+        : pickNaviStopReel(currentNaviOrderRef.current, naviStepRef.current, stoppedRef.current)
+    if (targetReel === -1) return
+    triggerVisual(targetReel as ReelIndex)
+    onStop(targetReel)
+  }, [onStop])
+
   // AUTO PLAY Timer Logic (AUTO PLAY ON / 倍速ON)
   useEffect(() => {
     if (!autoPlay) return
@@ -1584,26 +1446,9 @@ function App() {
       } else if (sceneRef.current === 'lever') {
         triggerVisual('lever')
         onLever()
-      } else if (sceneRef.current === 'bonusSpin') {
-        // ボーナス確定中: 順押しで赤７を揃える
-        const targetReel = stoppedRef.current.findIndex((s) => !s)
-        if (targetReel !== -1) {
-          triggerVisual(targetReel as 0 | 1 | 2)
-          onStop(targetReel)
-        }
-      } else if (sceneRef.current === 'spinning') {
-        // 押し順ナビに従ってリールを停止
-        const order = currentNaviOrderRef.current
-        const step = naviStepRef.current
-        const preferred = order[step]
-        const targetReel =
-          preferred !== undefined && !stoppedRef.current[preferred]
-            ? preferred
-            : stoppedRef.current.findIndex((s) => !s)
-        if (targetReel !== -1 && !stoppedRef.current[targetReel]) {
-          triggerVisual(targetReel as 0 | 1 | 2)
-          onStop(targetReel)
-        }
+      } else if (sceneRef.current === 'bonusSpin' || sceneRef.current === 'spinning') {
+        // ボーナス確定中は順押しで赤７を揃え、通常は押し順ナビに従ってリールを停止
+        stopNextReel()
       } else if (sceneRef.current === 'battleModeIntro') {
         const now = Date.now()
         if (now - lastBattleStepTimeRef.current < 2500) return
@@ -1625,7 +1470,7 @@ function App() {
     }, intervalMs)
 
     return () => clearInterval(timer)
-  }, [autoPlay, fastSpeed, menuOpen, isTabHidden, sessionExpiredNotice, onBet, onLever, onStop, onBattle, onNext, onStartBattleAction])
+  }, [autoPlay, fastSpeed, menuOpen, isTabHidden, sessionExpiredNotice, onBet, onLever, stopNextReel, onBattle, onNext, onStartBattleAction])
 
   // オート / 倍速オート中も「CHANCEボタンを押せ!!」演出と押下後ホワイトアウトが失われないよう一定時間後に自動押下
   useEffect(() => {
@@ -1674,6 +1519,34 @@ function App() {
     sceneRef.current = 'ready'
   }, [soundBonusFanfare])
 
+  // 「次に進む」共通アクション（どこでもタップ・Space/Enter 共通）
+  // オートプレイは突入演出などに待ち時間の制御があるため AUTO PLAY Timer Logic 側で個別に分岐している
+  const performPrimaryAction = useCallback(() => {
+    if (isBattleModeRef.current && battlePhaseRef.current === 'false_defeat') {
+      resolveFalseDefeatChance()
+      return
+    }
+    const currentScene = sceneRef.current
+    if (currentScene === 'bonusSpin' || currentScene === 'spinning') {
+      stopNextReel()
+    } else if (currentScene === 'bonusGet') {
+      onStartBonus()
+    } else if (currentScene === 'battleModeIntro') {
+      onStartBattleAction()
+    } else if (currentScene === 'ready') {
+      triggerVisual('bet')
+      onBet()
+    } else if (currentScene === 'lever') {
+      triggerVisual('lever')
+      onLever()
+    } else if (currentScene === 'battle') {
+      triggerVisual('chance')
+      onBattle()
+    } else if (currentScene === 'battleResult') {
+      onNext()
+    }
+  }, [resolveFalseDefeatChance, stopNextReel, onStartBonus, onStartBattleAction, onBet, onLever, onBattle, onNext])
+
   // Anywhere Tap: Triggers the natural next action anywhere on the screen
   const handleAnywhereTap = (e: React.MouseEvent | React.TouchEvent) => {
     unlockAudio()
@@ -1691,46 +1564,8 @@ function App() {
 
     if (target.closest('.interactive-control')) return
 
-    if (isBattleModeRef.current && battlePhaseRef.current === 'false_defeat') {
-      resolveFalseDefeatChance()
-      return
-    }
-
-    if (sceneRef.current === 'bonusSpin') {
-      const nextIdx = stoppedRef.current.findIndex((s) => !s)
-      if (nextIdx !== -1) {
-        triggerVisual(nextIdx as 0 | 1 | 2)
-        onStop(nextIdx)
-      }
-    } else if (sceneRef.current === 'bonusGet') {
-      onStartBonus()
-    } else if (sceneRef.current === 'battleModeIntro') {
-      onStartBattleAction()
-    } else if (sceneRef.current === 'ready') {
-      triggerVisual('bet')
-      onBet()
-    } else if (sceneRef.current === 'lever') {
-      triggerVisual('lever')
-      onLever()
-    } else if (sceneRef.current === 'spinning') {
-      // どこでもタップ時も押し順ナビに従ってリールを停止
-      const order = currentNaviOrderRef.current
-      const step = naviStepRef.current
-      const preferred = order[step]
-      const targetReel =
-        preferred !== undefined && !stoppedRef.current[preferred]
-          ? preferred
-          : stoppedRef.current.findIndex((s) => !s)
-      if (targetReel !== -1 && !stoppedRef.current[targetReel]) {
-        triggerVisual(targetReel as 0 | 1 | 2)
-        onStop(targetReel)
-      }
-    } else if (sceneRef.current === 'battle') {
-      triggerVisual('chance')
-      onBattle()
-    } else if (sceneRef.current === 'battleResult') {
-      onNext()
-    }
+    // 以降の「次に進む」分岐は Space/Enter と共通
+    performPrimaryAction()
   }
 
   // Keyboard shortcut support
@@ -1755,32 +1590,7 @@ function App() {
       }
       if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault()
-        if (isBattleModeRef.current && battlePhaseRef.current === 'false_defeat') {
-          resolveFalseDefeatChance()
-        } else if (sceneRef.current === 'bonusSpin') {
-          const nextIdx = stoppedRef.current.findIndex((s) => !s)
-          if (nextIdx !== -1) {
-            triggerVisual(nextIdx as 0 | 1 | 2)
-            onStop(nextIdx)
-          }
-        } else if (sceneRef.current === 'bonusGet') { onStartBonus() }
-        else if (sceneRef.current === 'battleModeIntro') { onStartBattleAction() }
-        else if (sceneRef.current === 'ready') { triggerVisual('bet'); onBet() }
-        else if (sceneRef.current === 'lever') { triggerVisual('lever'); onLever() }
-        else if (sceneRef.current === 'spinning') {
-          const order = currentNaviOrderRef.current
-          const step = naviStepRef.current
-          const preferred = order[step]
-          const targetReel =
-            preferred !== undefined && !stoppedRef.current[preferred]
-              ? preferred
-              : stoppedRef.current.findIndex((s) => !s)
-          if (targetReel !== -1 && !stoppedRef.current[targetReel]) {
-            triggerVisual(targetReel as 0 | 1 | 2)
-            onStop(targetReel)
-          }
-        } else if (sceneRef.current === 'battle') { triggerVisual('chance'); onBattle() }
-        else if (sceneRef.current === 'battleResult') onNext()
+        performPrimaryAction()
       }
       if (e.key === '1') { triggerVisual(0); onStop(0) }
       if (e.key === '2') { triggerVisual(1); onStop(1) }
@@ -1790,7 +1600,7 @@ function App() {
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [onStartBonus, onBet, onLever, onStop, onBattle, onNext, onChancePress, resolveFalseDefeatChance])
+  }, [performPrimaryAction, onStop, onChancePress])
 
   const isBattleScene = scene === 'battle' || scene === 'battleResult'
   const isBattleLampLit = isBattleMode || scene === 'battleModeIntro' || isBattleScene
@@ -1802,41 +1612,16 @@ function App() {
     scene === 'battle' ||
     scene === 'battleResult'
 
-  // ボーナス確定中 (bonusSpin) の次の停止対象リールインデックス
-  const nextBonusReel = scene === 'bonusSpin' ? stopped.findIndex((s) => !s) : -1
-
-  // 押し順ナビ表示判定:
-  // - リプレイ成立時はゲーム内共通でナビ非表示
-  // - BATTLE MODE中のベル時は第1停止のみナビ表示（2・3停止目は順不同）
-  const isBellNaviActive = scene === 'spinning' && spin !== null && spin.symbol === 'bell' && !spin.isReplay
-  const isReelNaviTarget = (idx: number): boolean => {
-    if (scene === 'bonusSpin') return !stopped[idx] && nextBonusReel === idx
-    if (!isBellNaviActive || stopped[idx]) return false
-    if (isBattleMode) {
-      return naviStep === 0 && currentNaviOrder[0] === idx
-    }
-    return currentNaviOrder[naviStep] === idx
-  }
-  const getNaviSegmentClass = (idx: number): string => {
-    if (scene === 'bonusSpin' && !stopped[idx]) {
-      return nextBonusReel === idx ? 'target' : 'wait'
-    }
-    if (isBellNaviActive && !stopped[idx]) {
-      if (isBattleMode) {
-        return naviStep === 0 ? (currentNaviOrder[0] === idx ? 'target' : 'wait') : 'idle'
-      }
-      return currentNaviOrder[naviStep] === idx ? 'target' : 'wait'
-    }
-    return 'idle'
-  }
-  const getNaviSegmentNum = (idx: number): string | number => {
-    if (scene === 'bonusSpin') return idx + 1
-    if (!isBellNaviActive) return '-'
-    if (isBattleMode) {
-      return currentNaviOrder[0] === idx ? 1 : '-'
-    }
-    return currentNavi[idx]
-  }
+  // 押し順ナビ表示（リール強調枠・STOPボタン強調・右側ナビランプ）: src/game/navi.ts resolveNaviReelDisplay
+  const naviDisplay = ([0, 1, 2] as const).map((idx) =>
+    resolveNaviReelDisplay(
+      { scene, spin, stopped, isBattleMode, naviOrder: currentNaviOrder, naviNumbers: currentNavi, naviStep },
+      idx
+    )
+  )
+  const isReelNaviTarget = (idx: number): boolean => naviDisplay[idx]?.isTarget ?? false
+  const getNaviSegmentClass = (idx: number): string => naviDisplay[idx]?.segment ?? 'idle'
+  const getNaviSegmentNum = (idx: number): string | number => naviDisplay[idx]?.num ?? '-'
 
   // Top Lamp illumination mode determination (上下ランプ・拡張サイドフレーム共通)
   const topLampMode = resolveTopLampMode({
@@ -1881,24 +1666,6 @@ function App() {
   const showSideWings = isMobilePortrait && sideSpace > 0
   const showDebugPanels = import.meta.env.DEV && !isLandscapeCompact && !isMobilePortrait && sideSpace >= 276
   const debugPanelOffsetPx = Math.round(stageWidth / 2) + 20
-  const forcedSpinRoleOptions = [
-    ...SPIN_ROLES.filter((r) => r.id !== 'melon' && r.id !== 'premium_bar').map((r) => ({ id: r.id, label: r.label })),
-    { id: 'melon:no_stock', label: 'スイカ（ストックなし）' },
-    { id: 'melon:stock', label: 'スイカ（ストックあり）' },
-    ...SPIN_ROLES.filter((r) => r.id === 'premium_bar').map((r) => ({ id: r.id, label: r.label })),
-  ]
-  const forcedSpinRoleLabel =
-    forcedSpinRole !== null
-      ? (forcedSpinRoleOptions.find((r) => r.id === forcedSpinRole)?.label ?? forcedSpinRole)
-      : '通常抽選'
-  const forcedStockLabel =
-    forcedStockMode === 'win' ? 'ストックあり' : forcedStockMode === 'lose' ? 'ストックなし' : '通常抽選'
-  const forcedBarAimLabel =
-    forcedBarAimMode === 'on' ? '強制発生' : forcedBarAimMode === 'off' ? '発生なし' : '通常抽選'
-  const forcedBattleLabel =
-    forcedBattlePattern !== null
-      ? (DEBUG_BATTLE_SCENARIOS.find((s) => s.id === forcedBattlePattern)?.label ?? forcedBattlePattern)
-      : '通常抽選'
   const progressStatusText = isBattleMode
     ? `バトル中（${battleGame}G / ${BATTLE_PART_GAMES}G）`
     : scene === 'battleModeIntro'
@@ -1927,141 +1694,35 @@ function App() {
       onClick={handleAnywhereTap}
     >
       {showDebugPanels && (
-        <aside
-          className="debug-panel debug-panel-left interactive-control"
-          style={{ right: `calc(50% + ${debugPanelOffsetPx}px)` }}
-          onClick={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-        >
-          <div className="debug-panel-title">DEBUG 設定</div>
-          <label className="debug-field">
-            <span className="debug-field-label">強制役指定</span>
-            <select
-              className="debug-select"
-              value={forcedSpinRole ?? ''}
-              onChange={(e) => {
-                const val = e.target.value || null
-                forcedSpinRoleRef.current = val
-                setForcedSpinRole(val)
-              }}
-            >
-              <option value="">通常抽選</option>
-              {forcedSpinRoleOptions.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="debug-field">
-            <span className="debug-field-label">ストック抽選指定</span>
-            <select
-              className="debug-select"
-              value={forcedStockMode}
-              onChange={(e) => {
-                const val = e.target.value as 'auto' | 'win' | 'lose'
-                forcedStockModeRef.current = val
-                setForcedStockMode(val)
-              }}
-            >
-              <option value="auto">通常抽選</option>
-              <option value="win">ストックあり</option>
-              <option value="lose">ストックなし</option>
-            </select>
-          </label>
-          <label className="debug-field">
-            <span className="debug-field-label">BARを狙え演出</span>
-            <select
-              className="debug-select"
-              value={forcedBarAimMode}
-              onChange={(e) => {
-                const val = e.target.value as 'auto' | 'on' | 'off'
-                forcedBarAimModeRef.current = val
-                setForcedBarAimMode(val)
-              }}
-            >
-              <option value="auto">通常抽選</option>
-              <option value="on">強制発生</option>
-              <option value="off">発生なし</option>
-            </select>
-          </label>
-          <label className="debug-field">
-            <span className="debug-field-label">バトル演出指定</span>
-            <select
-              className="debug-select"
-              value={forcedBattlePattern ?? ''}
-              onChange={(e) => {
-                const val = (e.target.value || null) as DebugBattleScenarioId | null
-                forcedBattlePatternRef.current = val
-                setForcedBattlePattern(val)
-              }}
-            >
-              <option value="">通常抽選</option>
-              {DEBUG_BATTLE_SCENARIOS.map((scenario) => (
-                <option key={scenario.id} value={scenario.id}>
-                  {scenario.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </aside>
+        <DebugSettingsPanel
+          offsetPx={debugPanelOffsetPx}
+          forcedSpinRole={forcedSpinRole}
+          onForcedSpinRoleChange={(val) => {
+            forcedSpinRoleRef.current = val
+            setForcedSpinRole(val)
+          }}
+          forcedStockMode={forcedStockMode}
+          onForcedStockModeChange={(val) => {
+            forcedStockModeRef.current = val
+            setForcedStockMode(val)
+          }}
+          forcedBarAimMode={forcedBarAimMode}
+          onForcedBarAimModeChange={(val) => {
+            forcedBarAimModeRef.current = val
+            setForcedBarAimMode(val)
+          }}
+          forcedBattlePattern={forcedBattlePattern}
+          onForcedBattlePatternChange={(val) => {
+            forcedBattlePatternRef.current = val
+            setForcedBattlePattern(val)
+          }}
+        />
       )}
-      {showSideWings && (
-        <div className="cabinet-side-wing wing-left" style={sideWingStyle} aria-hidden="true">
-          <div className="wing-header-cap" />
-          <div className="wing-frame-body">
-            <span className="wing-rivet top" />
-            <div className={`wing-led-strip mode-${topLampMode}`} />
-            <span className="wing-rivet bottom" />
-          </div>
-          <div className="wing-footer-cap" />
-        </div>
-      )}
+      {showSideWings && <CabinetSideWing side="left" topLampMode={topLampMode} style={sideWingStyle} />}
       <div className="cabinet-scale-stage" style={stageStyle}>
         <div className={`pachislot-cabinet ${isBottomCompact ? 'bottom-compact' : ''} ${cabinetCherryFlash ? 'cabinet-cherry-flash' : ''} ${cabinetMelonFlash ? 'cabinet-melon-flash' : ''} ${cabinetPremiumFlash ? 'cabinet-premium-flash' : ''}`} style={cabinetStyle}>
         {/* --- 1. TOP ILLUMINATION CROWN (演出特化型・超ド派手トップランプユニット) --- */}
-        <header className={`top-crown lamp-mode-${topLampMode}`}>
-          <div className="crown-prism-wing wing-left">
-            <span className="wing-prism-bar bar-1" />
-            <span className="wing-prism-bar bar-2" />
-            <span className="wing-prism-bar bar-3" />
-          </div>
-
-          <div className="crown-center-lamp-unit">
-            <div className="lamp-brow-visor" />
-            <div className="lamp-led-runner upper-runner" />
-
-            <div className="lamp-prism-array">
-              {[0, 1, 2, 3, 4].map((segIdx) => (
-                <div key={segIdx} className={`lamp-segment seg-${segIdx}`}>
-                  <div className="segment-prism-facet" />
-                  <div className="segment-led-core" />
-                </div>
-              ))}
-
-              <div className="lamp-center-shield" aria-hidden="true">
-                <div className="shield-bezel" />
-                <div className="shield-prism-facet" />
-                <div className="shield-led-core" />
-              </div>
-
-              {[5, 6, 7, 8, 9].map((segIdx) => (
-                <div key={segIdx} className={`lamp-segment seg-${segIdx}`}>
-                  <div className="segment-prism-facet" />
-                  <div className="segment-led-core" />
-                </div>
-              ))}
-            </div>
-
-            <div className="lamp-led-runner lower-runner" />
-          </div>
-
-          <div className="crown-prism-wing wing-right">
-            <span className="wing-prism-bar bar-3" />
-            <span className="wing-prism-bar bar-2" />
-            <span className="wing-prism-bar bar-1" />
-          </div>
-        </header>
+        <TopCrown topLampMode={topLampMode} />
 
         {/* --- 2. UPPER LCD SCREEN (巨大メイン演出液晶) --- */}
         <section className={`upper-lcd-frame ${screenFlash ? 'screen-flash' : ''}`}>
@@ -2123,55 +1784,16 @@ function App() {
             )}
 
             {/* チェリー成立時専用エフェクト（第3リール停止まで継続・ストック成否や種類による差異なし） */}
-            {showCherryEffect && (
-              <div key={cherryEffectKey} className="cherry-effect-overlay" aria-hidden="true">
-                <div className="cherry-flash-layer" />
-                <div className="cherry-shockwave" />
-                <div className="cherry-lightning-beams" />
-                <div className="cherry-floating-symbol">
-                  <ReelSymbolSvg id="cherry" className="announcement-symbol-svg cherry-announcement-symbol" isCenter />
-                </div>
-              </div>
-            )}
+            {showCherryEffect && <CherryEffectOverlay key={cherryEffectKey} />}
 
             {/* スイカ成立時専用エフェクト（第3リール停止まで継続・ストック成否による差異なし） */}
-            {showMelonEffect && (
-              <div key={melonEffectKey} className="melon-effect-overlay" aria-hidden="true">
-                <div className="melon-flash-layer" />
-                <div className="melon-shockwave" />
-                <div className="melon-lightning-beams" />
-                <div className="melon-floating-symbol">
-                  <ReelSymbolSvg id="melon" className="announcement-symbol-svg melon-announcement-symbol" isCenter />
-                </div>
-              </div>
-            )}
+            {showMelonEffect && <MelonEffectOverlay key={melonEffectKey} />}
 
             {/* スイカ＋ストック当選時の獲得告知 */}
-            {showMelonStockBanner && (
-              <div key={melonStockKey} className="melon-stock-overlay" aria-hidden="true">
-                <div className="melon-stock-badge">
-                  <span className="melon-stock-kicker">MELON GET!!</span>
-                  <span className="melon-stock-value">STOCK +1</span>
-                </div>
-              </div>
-            )}
+            {showMelonStockBanner && <MelonStockBanner key={melonStockKey} />}
 
             {/* 「BARを狙え！」カットイン演出（レバーON〜第3リール停止まで表示） */}
-            {showBarAimEffect && (
-              <div key={barAimEffectKey} className="bar-aim-overlay" aria-hidden="true">
-                <div className="bar-aim-bg-flare" />
-                <div className="bar-aim-speed-lines" />
-                <div className="bar-aim-cutin-band">
-                  <span className="bar-aim-kicker">CHANCE!!</span>
-                  <span className="bar-aim-main-text">BARを狙え！</span>
-                  <div className="bar-aim-symbols-row">
-                    <span className="bar-aim-mini-badge">BAR</span>
-                    <span className="bar-aim-mini-badge">BAR</span>
-                    <span className="bar-aim-mini-badge">BAR</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            {showBarAimEffect && <BarAimCutinOverlay key={barAimEffectKey} />}
 
             {/* プレミアムBAR揃い成功時究極演出（PixiJS 黄金雷撃＆衝撃波 + GSAP 多段スラム） */}
             {showPremiumBarEffect && <PremiumBarDisplay key={premiumBarEffectKey} />}
@@ -2200,96 +1822,14 @@ function App() {
 
             {/* 設定画面 (銀色ボタン押下で液晶表示切り替え・ダイアログではなく液晶画面そのもの) */}
             {menuOpen && (
-              <div className="lcd-settings-view interactive-control" onClick={(e) => e.stopPropagation()}>
-                <div className="settings-grid">
-                  {/* 1. 設定 (見出し「設定」、設定側「？」のみ) */}
-                  <div className="settings-row">
-                    <span className="settings-label">設定</span>
-                    <div className="settings-val-badge">？</div>
-                  </div>
-
-                  {/* 2. SOUND (OFF / ON のみ・絵文字禁止) */}
-                  <div className="settings-row">
-                    <span className="settings-label">SOUND</span>
-                    <div className="settings-btn-group">
-                      <button
-                        type="button"
-                        className={`settings-opt-btn ${muted ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setMuted(true)
-                        }}
-                      >
-                        OFF
-                      </button>
-                      <button
-                        type="button"
-                        className={`settings-opt-btn ${!muted ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setMuted(false)
-                        }}
-                      >
-                        ON
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 3. AUTO PLAY (OFF / ON のみ) */}
-                  <div className="settings-row">
-                    <span className="settings-label">AUTO PLAY</span>
-                    <div className="settings-btn-group">
-                      <button
-                        type="button"
-                        className={`settings-opt-btn ${!autoPlay ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setAutoPlay(false)
-                        }}
-                      >
-                        OFF
-                      </button>
-                      <button
-                        type="button"
-                        className={`settings-opt-btn ${autoPlay ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setAutoPlay(true)
-                        }}
-                      >
-                        ON
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 4. 倍速 (OFF / ON のみ・絵文字禁止) */}
-                  <div className="settings-row">
-                    <span className="settings-label">倍速</span>
-                    <div className="settings-btn-group">
-                      <button
-                        type="button"
-                        className={`settings-opt-btn ${!fastSpeed ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setFastSpeed(false)
-                        }}
-                      >
-                        OFF
-                      </button>
-                      <button
-                        type="button"
-                        className={`settings-opt-btn ${fastSpeed ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setFastSpeed(true)
-                        }}
-                      >
-                        ON
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <LcdSettingsView
+                muted={muted}
+                onMutedChange={setMuted}
+                autoPlay={autoPlay}
+                onAutoPlayChange={setAutoPlay}
+                fastSpeed={fastSpeed}
+                onFastSpeedChange={setFastSpeed}
+              />
             )}
 
             {/* 特定シーン (ボーナス確定・GET・BATTLE MODE・死闘) のみ下部ナビストリップ表示。小役パート中は画面全体を魅せるため非表示 */}
@@ -2574,135 +2114,23 @@ function App() {
         </section>
 
         {/* --- 5. BELLY GLASS PANEL (下部アクリルパネルアート + スリット電飾バー) --- */}
-        <section className="belly-glass-section">
-          <div className="belly-glass-housing">
-            {/* パネル両サイドのランプは演出性がある時は筐体上部の色・演出と完全同期 */}
-            <div className={`side-led-bar left mode-${topLampMode}`} />
-            <div className="belly-glass-window">
-              <img
-                src="/belly_glass_protagonist.jpg"
-                alt="主人公なのにやけに勝てない。黒いジャケットに金の装飾とボルドーのスカーフを身に着けた主人公の筐体パネル"
-                className="belly-art-img"
-              />
-              <div className="glass-reflection" />
-            </div>
-            <div className={`side-led-bar right mode-${topLampMode}`} />
-          </div>
-        </section>
+        <BellyGlassPanel topLampMode={topLampMode} />
 
         {/* --- 6. BOTTOM CABINET DECK (左右縦型スピーカー & 中央固定受け皿ユニット & 前面リム) --- */}
-        <footer className="bottom-cabinet-deck">
-          <div className="bottom-unit-core">
-            {/* 左：縦型スリムスピーカー */}
-            <div className="bottom-speaker left-speaker" aria-hidden="true">
-              <span className="speaker-mount-screw top" />
-              <div className="speaker-mesh-grill">
-                <div className="speaker-cone-shadow" />
-                <div className="speaker-perforation" />
-              </div>
-              <span className="speaker-mount-screw bottom" />
-            </div>
-
-            {/* 中央：奥壁組み込み排出口モールド ＋ 立体下皿 (固定筐体) */}
-            <div className="bottom-center-bay">
-              <div className="medal-tray-unit" aria-hidden="true">
-                <div className="tray-upper-surround" />
-
-                <div className="tray-3d-basin">
-                  {/* 奥壁 + 組み込み排出口モールド */}
-                  <div className="tray-back-wall">
-                    <div className="tray-chute-recess">
-                      <div className="tray-chute-baffle" />
-                      <div className="tray-chute-throat" />
-                      <div className="tray-chute-slide" />
-                    </div>
-                  </div>
-
-                  {/* 左右の傾斜側壁 */}
-                  <div className="tray-side-wall left" />
-                  <div className="tray-side-wall right" />
-
-                  {/* 下皿の底面 (溝・奥行き・立体陰影) */}
-                  <div className="tray-floor">
-                    <div className="tray-floor-grooves" />
-                    <div className="tray-floor-shadow" />
-                  </div>
-                </div>
-
-                {/* 手前に高く立ち上がる半透明スモークフロントパネル */}
-                <div className="tray-protruding-lip">
-                  <span className="tray-lip-top-bevel" />
-                  <span className="tray-lip-scoop" />
-                </div>
-              </div>
-            </div>
-
-            {/* 右：縦型スリムスピーカー */}
-            <div className="bottom-speaker right-speaker" aria-hidden="true">
-              <span className="speaker-mount-screw top" />
-              <div className="speaker-mesh-grill">
-                <div className="speaker-cone-shadow" />
-                <div className="speaker-perforation" />
-              </div>
-              <span className="speaker-mount-screw bottom" />
-            </div>
-          </div>
-
-          {/* 最下部：薄型筐体前面リム */}
-          <div className="tray-front-bezel">
-            <span className="tray-rim-rivet left" />
-            <span className="tray-logo-text">HERO NEVER WINS 2026</span>
-            <span className="tray-rim-rivet right" />
-          </div>
-        </footer>
+        <BottomCabinetDeck />
         </div>
       </div>
-      {showSideWings && (
-        <div className="cabinet-side-wing wing-right" style={sideWingStyle} aria-hidden="true">
-          <div className="wing-header-cap" />
-          <div className="wing-frame-body">
-            <span className="wing-rivet top" />
-            <div className={`wing-led-strip mode-${topLampMode}`} />
-            <span className="wing-rivet bottom" />
-          </div>
-          <div className="wing-footer-cap" />
-        </div>
-      )}
+      {showSideWings && <CabinetSideWing side="right" topLampMode={topLampMode} style={sideWingStyle} />}
       {showDebugPanels && (
-        <aside
-          className="debug-panel debug-panel-right interactive-control"
-          style={{ left: `calc(50% + ${debugPanelOffsetPx}px)` }}
-          onClick={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-        >
-          <div className="debug-panel-title">DEBUG 状態</div>
-          <dl className="debug-status-list">
-            <div className="debug-status-row">
-              <dt>保有ストック数</dt>
-              <dd>{stockCount}</dd>
-            </div>
-            <div className="debug-status-row">
-              <dt>次回成立役</dt>
-              <dd>{forcedSpinRoleLabel}</dd>
-            </div>
-            <div className="debug-status-row">
-              <dt>次回ストック</dt>
-              <dd>{forcedStockLabel}</dd>
-            </div>
-            <div className="debug-status-row">
-              <dt>次回BAR演出</dt>
-              <dd>{forcedBarAimLabel}</dd>
-            </div>
-            <div className="debug-status-row">
-              <dt>次回バトル演出</dt>
-              <dd>{forcedBattleLabel}</dd>
-            </div>
-            <div className="debug-status-row">
-              <dt>現在の進行状態</dt>
-              <dd>{progressStatusText}</dd>
-            </div>
-          </dl>
-        </aside>
+        <DebugStatusPanel
+          offsetPx={debugPanelOffsetPx}
+          stockCount={stockCount}
+          forcedSpinRole={forcedSpinRole}
+          forcedStockMode={forcedStockMode}
+          forcedBarAimMode={forcedBarAimMode}
+          forcedBattlePattern={forcedBattlePattern}
+          progressStatusText={progressStatusText}
+        />
       )}
     </div>
   )

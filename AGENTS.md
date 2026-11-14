@@ -1,5 +1,12 @@
 # 開発ルール
 
+## コード探索・テストの入口
+
+- 調査・改修・機能追加の前に [コードマップ](docs/code-map.md) で、機能ごとの入口ファイル・関数名・仕様書・対応テストを確認してください。
+- UI に依存しない判定ロジックは `src/engine.ts` / `src/battle/` / `src/game/` / `src/layout/` に純粋関数として置き、同じディレクトリの `*.test.ts` にテストを追加してください。`src/main.tsx` には状態更新・演出の発火・タイマーのみを残す方針です。
+- テストは機能単位で実行できます: `npm run test:engine` / `test:battle` / `test:game` / `test:layout`。最終確認は `npm run check`（型チェック + 全テスト）。
+- `src/battle/battle.test.ts` は BATTLE MODE 仕様書の不変条件を固定しています。仕様変更の合意なしに期待値を書き換えないでください。
+
 ## キャラクターデザインの参照
 
 - キャラクター名が指定された場合は、対応する設定ガイド画像を必ず参照してください。設定ガイドの一覧と外見の要点は [`docs/characters/README.md`](docs/characters/README.md) を参照してください。

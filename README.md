@@ -15,9 +15,12 @@ Vite が表示したURLをブラウザで開いてください。スマホの実
 
 ```bash
 npm run typecheck
-npm test
+npm test            # 全テスト（node --test、Node.js 22.18+ / 23.6+ が必要）
+npm run check       # 型チェック + 全テスト
 npm run build
 ```
+
+機能単位のテスト: `npm run test:engine`（抽選・払出し）/ `test:battle`（BATTLE MODE 画像・SE/VOICE 仕様）/ `test:game`（押し順ナビ・BGM・デバッグ指定）/ `test:layout`（筐体レスポンシブ）。
 
 ## MVP の遊び方
 
@@ -46,11 +49,16 @@ npm run build
 
 ## ファイル構成
 
-- `src/main.tsx` : React UI・ゲーム進行・筐体レイアウト計算・操作
-- `src/engine.ts` : 内部抽選と設定値、筐体ランプのモード判定
-- `src/engine.test.ts` : `engine.ts` の単体テスト（`npm test`）
+機能ごとの入口・仕様書・テストの対応は [コードマップ](docs/code-map.md) を参照してください。
+
+- `src/main.tsx` : React UI・ゲーム進行の状態管理・操作ハンドラ・筐体全体の描画
+- `src/engine.ts` : 内部抽選と設定値、筐体ランプのモード判定（`src/engine.test.ts`）
+- `src/battle/` : BATTLE MODE の G・フェーズ別の画像／SE・VOICE 決定表（`battle.test.ts`）
+- `src/game/` : 押し順ナビ判定・BGM 選択・デバッグ指定変換（`game.test.ts`）
+- `src/layout/` : 筐体のレスポンシブスケーリング計算（`cabinetLayout.test.ts`）
 - `src/se.ts` / `src/bgm.ts` : 効果音・VOICE・BGM の再生制御
 - `src/components/` : 液晶演出コンポーネント（BATTLE MODE、BONUS、雑魚戦ナビ、GAME OVER 等）
+- `src/components/cabinet/` : 筐体パーツ・設定画面・デバッグパネル・小役オーバーレイ
 - `src/style.css` : 筐体・レスポンシブレイアウト
 - `public/` : ゲーム用画像・音声アセット（`public/audio/`）
 - `docs/` : 演出・レイアウト・アセット等の仕様書、キャラクター設定ガイド
