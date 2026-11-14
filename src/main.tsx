@@ -1940,7 +1940,7 @@ function App() {
               <div className={`battle-mode-emblem ${isBattleLampLit ? 'lit-flame' : 'dormant'}`}>
                 <div className="bm-emblem-frame">
                   <img
-                    src={isBattleLampLit ? '/battle_mode_lit.jpg' : '/battle_mode_off.jpg'}
+                    src={isBattleLampLit ? 'battle_mode_lit.jpg' : 'battle_mode_off.jpg'}
                     alt="BATTLE MODE"
                     className="bm-panel-img"
                   />

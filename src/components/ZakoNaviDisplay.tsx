@@ -91,7 +91,7 @@ export function ZakoNaviDisplay({
       {/* 1. 背景は独立レイヤー。回転中だけ微細にパンして奥行きを出す */}
       <img
         className={`zako-arena-background ${isSpinning ? 'running-shake' : ''}`}
-        src="/battle_intro_arena.jpg"
+        src="battle_intro_arena.jpg"
         alt=""
         aria-hidden="true"
         draggable={false}
@@ -133,7 +133,7 @@ export function ZakoNaviDisplay({
                 <div className="zako-target-aura" aria-hidden="true" />
                 <div className="zako-soldier-frame">
                   <img
-                    src="/mass_production_soldier.webp"
+                    src="mass_production_soldier.webp"
                     alt={`ヴォルグ軍団の${cfg.label}`}
                     className="zako-cutout-img"
                     draggable={false}

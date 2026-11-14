@@ -15,33 +15,33 @@ import type { BattlePattern, BattlePhase } from '../engine.ts'
  * BATTLE MODE 基本14枚画像マッピング（docs/battle-mode/battle-mode-basic-structure.md 準拠）
  */
 export const BATTLE_BASE_IMAGES = {
-  g01Standoff: '/battle_base_g01_standoff.webp',
-  g02Tension: '/battle_base_g02_tension.webp',
-  g03HeroFirst: '/battle_base_g03_hero_first.webp',
-  g03EnemyFirst: '/battle_base_g03_enemy_first.webp',
-  g04_05HeroSpecial: '/battle_base_g04_05_hero_special.webp',
-  g04_05EnemySpecial: '/battle_base_g04_05_enemy_special.webp',
-  g06HeroHits: '/battle_base_g06_hero_hits.webp',
-  g06EnemyHits: '/battle_base_g06_enemy_hits.webp',
-  g07_08HeroEndures: '/battle_base_g07_08_hero_endures.webp',
-  g07_08EnemyEndures: '/battle_base_g07_08_enemy_endures.webp',
-  resultHeroRises: '/battle_base_result_hero_rises.webp',
-  resultHeroFalls: '/battle_base_result_hero_falls.webp',
-  resultEnemyRises: '/battle_base_result_enemy_rises.webp',
-  resultEnemyFalls: '/battle_base_result_enemy_falls.webp',
+  g01Standoff: 'battle_base_g01_standoff.webp',
+  g02Tension: 'battle_base_g02_tension.webp',
+  g03HeroFirst: 'battle_base_g03_hero_first.webp',
+  g03EnemyFirst: 'battle_base_g03_enemy_first.webp',
+  g04_05HeroSpecial: 'battle_base_g04_05_hero_special.webp',
+  g04_05EnemySpecial: 'battle_base_g04_05_enemy_special.webp',
+  g06HeroHits: 'battle_base_g06_hero_hits.webp',
+  g06EnemyHits: 'battle_base_g06_enemy_hits.webp',
+  g07_08HeroEndures: 'battle_base_g07_08_hero_endures.webp',
+  g07_08EnemyEndures: 'battle_base_g07_08_enemy_endures.webp',
+  resultHeroRises: 'battle_base_result_hero_rises.webp',
+  resultHeroFalls: 'battle_base_result_hero_falls.webp',
+  resultEnemyRises: 'battle_base_result_enemy_rises.webp',
+  resultEnemyFalls: 'battle_base_result_enemy_falls.webp',
 } as const
 
 /** セリーヌ復活演出（既存画像を流用） */
-export const REVIVE_CUTIN_IMAGE = '/battle_girl_revive.jpg'
+export const REVIVE_CUTIN_IMAGE = 'battle_girl_revive.jpg'
 
 /**
  * ally_save（カイ援軍）専用画像4枚（docs/battle-mode/ally-save-scenario.md 準拠）
  */
 export const ALLY_SAVE_IMAGES = {
-  g06KaiArrives: '/battle_ally_g06_kai_arrives.webp',
-  g07KaiParries: '/battle_ally_g07_kai_parries.webp',
-  g08TrioAfterglow: '/battle_ally_g08_trio_afterglow.webp',
-  resultKaiShoulderTap: '/battle_ally_result_kai_shoulder_tap.webp',
+  g06KaiArrives: 'battle_ally_g06_kai_arrives.webp',
+  g07KaiParries: 'battle_ally_g07_kai_parries.webp',
+  g08TrioAfterglow: 'battle_ally_g08_trio_afterglow.webp',
+  resultKaiShoulderTap: 'battle_ally_result_kai_shoulder_tap.webp',
 } as const
 
 /**

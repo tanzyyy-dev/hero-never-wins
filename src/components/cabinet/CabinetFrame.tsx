@@ -89,7 +89,7 @@ export function BellyGlassPanel({ topLampMode }: { topLampMode: TopLampMode }) {
         <div className={`side-led-bar left mode-${topLampMode}`} />
         <div className="belly-glass-window">
           <img
-            src="/belly_glass_protagonist.jpg"
+            src="belly_glass_protagonist.jpg"
             alt="主人公なのにやけに勝てない。黒いジャケットに金の装飾とボルドーのスカーフを身に着けた主人公の筐体パネル"
             className="belly-art-img"
           />

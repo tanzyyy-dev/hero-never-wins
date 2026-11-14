@@ -42,7 +42,7 @@ describe('battle artwork: 画像アセット', () => {
   it('参照している画像ファイルが public/ に存在する', () => {
     const publicDir = fileURLToPath(new URL('../../public', import.meta.url))
     for (const src of [...Object.values(BATTLE_BASE_IMAGES), ...Object.values(ALLY_SAVE_IMAGES), REVIVE_CUTIN_IMAGE]) {
-      assert.ok(existsSync(publicDir + src), `missing asset: public${src}`)
+      assert.ok(existsSync(`${publicDir}/${src}`), `missing asset: public/${src}`)
     }
   })
 

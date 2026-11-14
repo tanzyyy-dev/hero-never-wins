@@ -10,7 +10,7 @@ type GameOverResultDisplayProps = {
   totalMedals: number
 }
 
-const ARENA_BG_SRC = '/battle_intro_arena.jpg'
+const ARENA_BG_SRC = 'battle_intro_arena.jpg'
 
 function loadImage(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {

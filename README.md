@@ -20,6 +20,8 @@ npm run check       # 型チェック + 全テスト
 npm run build
 ```
 
+`main` への push で GitHub Pages（https://tanzyyy-dev.github.io/hero-never-wins/）へ自動デプロイされます（Markdown・`docs/` のみの変更では実行されません）。詳細は [コードマップ「公開」](docs/code-map.md#7-公開github-pages) を参照してください。
+
 機能単位のテスト: `npm run test:engine`（抽選・払出し）/ `test:battle`（BATTLE MODE 画像・SE/VOICE 仕様）/ `test:game`（押し順ナビ・BGM・デバッグ指定）/ `test:layout`（筐体レスポンシブ）。
 
 ## MVP の遊び方

@@ -4,10 +4,10 @@ export type BgmTrack = 'opening' | 'pre_battle' | 'battle' | 'gameover' | null
 
 // BGMファイルパス定義 (プライマリパスとフォールバックパス)
 const BGM_PATHS: Record<'opening' | 'pre_battle' | 'battle' | 'gameover', string[]> = {
-  opening: ['/audio/bgm_opening.mp3', '/bgm_opening.mp3'],
-  pre_battle: ['/audio/bgm_pre_battle.mp3', '/bgm_pre_battle.mp3'],
-  battle: ['/audio/bgm_battle.mp3', '/bgm_battle.mp3'],
-  gameover: ['/audio/bgm_gameover.mp3', '/bgm_gameover.mp3'],
+  opening: ['audio/bgm_opening.mp3', 'bgm_opening.mp3'],
+  pre_battle: ['audio/bgm_pre_battle.mp3', 'bgm_pre_battle.mp3'],
+  battle: ['audio/bgm_battle.mp3', 'bgm_battle.mp3'],
+  gameover: ['audio/bgm_gameover.mp3', 'bgm_gameover.mp3'],
 }
 
 /**

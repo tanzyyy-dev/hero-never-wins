@@ -48,7 +48,8 @@
 | GAME OVER 結果画面 | `components/GameOverResultDisplay.tsx` | — | — |
 | セッション切れ・入力抑止 | `main.tsx` `resetForNewSession` / `SESSION_TIMEOUT_MS`、右クリック等の抑止 useEffect | — | — |
 | デバッグパネル（DEV のみ） | `game/debugOptions.ts`、`components/cabinet/DebugPanels.tsx`、`engine.ts` `DEBUG_BATTLE_SCENARIOS` | README | game / engine |
-| 画像・音声アセット | `public/` | [アセット圧縮仕様](assets-compression-spec.md)、[キャラ設定](characters/README.md) | battle（バトル画像の存在確認） |
+| 画像・音声アセット | `public/`（JS/TSX からは**先頭 `/` なしの相対パス**で参照） | [アセット圧縮仕様](assets-compression-spec.md)、[キャラ設定](characters/README.md) | `src/publicAssets.test.ts`（絶対パス禁止・実在確認）、battle |
+| GitHub Pages 公開 | `.github/workflows/deploy-pages.yml`、`vite.config.ts` `base: './'` | 下記「7. 公開」 | CI で `npm run check` |
 
 ### 開発用コンソールフック（`npm run dev` のみ）
 
@@ -112,3 +113,9 @@
 - `main.tsx` の状態は **useState と同名の useRef（`xxxRef`）を二重に持つ**ものが多くあります。タイマー・イベントハンドラ内では ref を読み、更新時は両方を書き換える既存の流儀に合わせてください。
 - `Scene` の `'battle'` / `'battleResult'` と `onBattle` / `onNext` は旧バトル方式の名残で、現在この scene に遷移する経路はありません（BATTLE MODE は `isBattleMode` + `battleGame` + `battlePhase` で表現）。削除する場合は `resolveTopLampMode` のテストも含めて影響を確認してください。
 - 8G終了後の分岐タイミング（`setTimeout` の ms）は演出・VOICE 尺と同期しています。値を変える場合は該当シナリオ仕様を確認してください。
+
+## 7. 公開（GitHub Pages）
+
+- `main` への push で `.github/workflows/deploy-pages.yml` が型チェック・テスト・ビルドを行い、`dist/` を GitHub Pages へデプロイします。
+- `**/*.md`・`docs/**`・`output/**` などビルドに関係しないファイルだけの変更ではワークフローは起動しません。Actions タブから手動実行（Run workflow）もできます。
+- 公開 URL はサブパス（`https://<owner>.github.io/hero-never-wins/`）です。`vite.config.ts` の `base: './'` により index.html と CSS の参照は相対化されますが、**JS/TSX の文字列は書き換わらない**ため、`public/` の素材は `'battle_mode_lit.jpg'` / `'audio/se_replay.wav'` のように先頭 `/` なしで書いてください（`npm test` で検出されます）。
