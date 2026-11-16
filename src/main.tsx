@@ -38,7 +38,14 @@ import { BattleSceneDisplay } from './components/BattleSceneDisplay'
 import { ZakoNaviDisplay } from './components/ZakoNaviDisplay'
 import { GameOverResultDisplay } from './components/GameOverResultDisplay'
 import { useBgm, type BgmTrack } from './bgm'
-import { preloadAllSe, playWavSe, playVoiceSe, stopVoiceSe, playCherrySe, playMelonSe, playBarAimSe, playPremiumBarFanfare, playBattleSe, suspendSeAudio, resumeSeAudio, type SeKey, type BattleSeType, type BattleSeOptions } from './se'
+import { preloadSe, unlockSeAudio, playWavSe, playVoiceSe, stopVoiceSe, playCherrySe, playMelonSe, playBarAimSe, playPremiumBarFanfare, playBattleSe, suspendSeAudio, resumeSeAudio, type SeKey, type BattleSeType, type BattleSeOptions } from './se'
+import {
+  ALL_STARTUP_IMAGES,
+  ALL_STARTUP_SE,
+  createStartupLoader,
+  preloadAndDecodeImage,
+  type StartupPhase,
+} from './game/startupLoader'
 import { BellyGlassPanel, BottomCabinetDeck, CabinetSideWing, TopCrown } from './components/cabinet/CabinetFrame'
 import { DebugSettingsPanel, DebugStatusPanel } from './components/cabinet/DebugPanels'
 import { LcdSettingsView } from './components/cabinet/LcdSettingsView'
@@ -86,6 +93,12 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [autoPlay, setAutoPlay] = useState(false)
   const [fastSpeed, setFastSpeed] = useState(false)
+  const [startupPhase, setStartupPhase] = useState<StartupPhase>('loading')
+  const [loadProgress, setLoadProgress] = useState<{ loaded: number; total: number }>({
+    loaded: 0,
+    total: ALL_STARTUP_IMAGES.length + ALL_STARTUP_SE.length,
+  })
+  const startupPhaseRef = useRef<StartupPhase>(startupPhase)
   const [reels, setReels] = useState<[SymbolId, SymbolId, SymbolId]>(START_REELS)
   const [stopped, setStopped] = useState<[boolean, boolean, boolean]>([false, false, false])
   const [bouncing, setBouncing] = useState<[boolean, boolean, boolean]>([false, false, false])
@@ -168,6 +181,7 @@ function App() {
   useEffect(() => { gamesRef.current = games }, [games])
   useEffect(() => { creditRef.current = credit }, [credit])
   useEffect(() => { menuOpenRef.current = menuOpen }, [menuOpen])
+  useEffect(() => { startupPhaseRef.current = startupPhase }, [startupPhase])
   useEffect(() => { isBattleModeRef.current = isBattleMode }, [isBattleMode])
   useEffect(() => { battleGameRef.current = battleGame }, [battleGame])
   useEffect(() => { battlePhaseRef.current = battlePhase }, [battlePhase])
@@ -205,9 +219,29 @@ function App() {
       }
   }, [])
 
-  // アプリ起動時に高音質WAV効果音を先行デコード
+  // 初期表示時に全画像・全SEをロード・デコード完了してからゲーム画面を表示する（二重実行防止・タイムアウト保護付き）
+  const startupLoaderRef = useRef<ReturnType<typeof createStartupLoader> | null>(null)
+  if (!startupLoaderRef.current) {
+    startupLoaderRef.current = createStartupLoader({
+      loadImage: preloadAndDecodeImage,
+      loadSe: async (key) => (await preloadSe(key)) !== null,
+      onProgress: (loaded, total) => {
+        setLoadProgress({ loaded, total })
+      },
+    })
+  }
+
   useEffect(() => {
-    preloadAllSe()
+    let cancelled = false
+    void startupLoaderRef.current?.run().then(() => {
+      if (cancelled) return
+      startupPhaseRef.current = 'ready'
+      setStartupPhase('ready')
+      lastActiveAtRef.current = Date.now()
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // 画面サイズ・visualViewport変化に応じて筐体全体の縮小率を再計算
@@ -552,7 +586,7 @@ function App() {
 
   // Reel spin animation timer
   useEffect(() => {
-    if (scene !== 'spinning' && scene !== 'bonusSpin') {
+    if (startupPhase !== 'ready' || (scene !== 'spinning' && scene !== 'bonusSpin')) {
       if (spinRef.current) clearInterval(spinRef.current)
       spinRef.current = null
       return
@@ -566,10 +600,11 @@ function App() {
     return () => {
       if (spinRef.current) clearInterval(spinRef.current)
     }
-  }, [scene])
+  }, [scene, startupPhase])
 
   // Actions
   const onBet = useCallback(() => {
+    if (startupPhaseRef.current !== 'ready') return
     if (menuOpenRef.current) {
       setMenuOpen(false)
       return
@@ -601,6 +636,7 @@ function App() {
   }, [soundBet, isReplayPending])
 
   const onLever = useCallback(() => {
+    if (startupPhaseRef.current !== 'ready') return
     if (menuOpenRef.current) {
       setMenuOpen(false)
       return
@@ -798,6 +834,7 @@ function App() {
   }, [soundBattleVoice, soundBattleSe, finishToNextRound, finishToGameOver])
 
   const onStop = useCallback((index: number) => {
+    if (startupPhaseRef.current !== 'ready') return
     if (menuOpenRef.current) {
       setMenuOpen(false)
       return
@@ -1433,10 +1470,11 @@ function App() {
 
   // AUTO PLAY Timer Logic (AUTO PLAY ON / 倍速ON)
   useEffect(() => {
-    if (!autoPlay) return
+    if (!autoPlay || startupPhase !== 'ready') return
 
     const intervalMs = fastSpeed ? 140 : 420
     const timer = setInterval(() => {
+      if (startupPhaseRef.current !== 'ready') return
       if (menuOpen || isTabHidden || sessionExpiredNotice) return // 設定画面・別タブ・セッション切れ表示中は一時停止
       lastActiveAtRef.current = Date.now()
 
@@ -1470,7 +1508,7 @@ function App() {
     }, intervalMs)
 
     return () => clearInterval(timer)
-  }, [autoPlay, fastSpeed, menuOpen, isTabHidden, sessionExpiredNotice, onBet, onLever, stopNextReel, onBattle, onNext, onStartBattleAction])
+  }, [autoPlay, fastSpeed, startupPhase, menuOpen, isTabHidden, sessionExpiredNotice, onBet, onLever, stopNextReel, onBattle, onNext, onStartBattleAction])
 
   // オート / 倍速オート中も「CHANCEボタンを押せ!!」演出と押下後ホワイトアウトが失われないよう一定時間後に自動押下
   useEffect(() => {
@@ -1486,6 +1524,7 @@ function App() {
   // Explicit CHANCE button click handler
   const onChancePress = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
     if (e) e.stopPropagation()
+    if (startupPhaseRef.current !== 'ready') return
     if (menuOpenRef.current) {
       setMenuOpen(false)
       return
@@ -1550,6 +1589,8 @@ function App() {
   // Anywhere Tap: Triggers the natural next action anywhere on the screen
   const handleAnywhereTap = (e: React.MouseEvent | React.TouchEvent) => {
     unlockAudio()
+    void unlockSeAudio()
+    if (startupPhaseRef.current !== 'ready') return
     if (sessionExpiredNoticeRef.current) return
     const target = e.target as HTMLElement
     const inDisplayArea = target.closest('.upper-lcd-display') || target.closest('.lcd-settings-view')
@@ -1573,6 +1614,7 @@ function App() {
     const handleKey = (e: KeyboardEvent) => {
       if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return
       if (e.target instanceof HTMLElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return
+      if (startupPhaseRef.current !== 'ready') return
       if (e.key === 's' || e.key === 'S') { setMenuOpen((prev) => !prev); return }
       if (sessionExpiredNoticeRef.current) {
         if (e.code === 'Space' || e.code === 'Enter' || e.key === 'Escape') {
@@ -1731,7 +1773,23 @@ function App() {
           <div className="lcd-corner-screw btm-left" />
           <div className="lcd-corner-screw btm-right" />
           <div className={`upper-lcd-display ${scene === 'bonusGet' || scene === 'bonusSpin' ? 'bonus-get-mode' : scene === 'battleModeIntro' ? 'battle-intro-mode' : isBattleMode ? 'battle-mode' : 'normal-mode'}`}>
-            {scene === 'bonusSpin' ? (
+            {startupPhase !== 'ready' ? (
+              <div className="startup-lcd-overlay" role="status" aria-live="polite">
+                <div className="startup-lcd-emblem">⚔️ HERO NEVER WINS ⚔️</div>
+                <div className="startup-lcd-status">NOW LOADING...</div>
+                <div className="startup-lcd-bar">
+                  <div
+                    className="startup-lcd-bar-fill"
+                    style={{
+                      width: `${loadProgress.total > 0 ? Math.min(100, Math.round((loadProgress.loaded / loadProgress.total) * 100)) : 0}%`,
+                    }}
+                  />
+                </div>
+                <div className="startup-lcd-percent">
+                  {loadProgress.total > 0 ? Math.min(100, Math.round((loadProgress.loaded / loadProgress.total) * 100)) : 0}%
+                </div>
+              </div>
+            ) : scene === 'bonusSpin' ? (
               <BonusKakuteiDisplay />
             ) : scene === 'bonusGet' ? (
               <BonusGetDisplay onPlayVoice={soundVoiceBonusGet} />
@@ -1833,7 +1891,7 @@ function App() {
             )}
 
             {/* 特定シーン (ボーナス確定・GET・BATTLE MODE・死闘) のみ下部ナビストリップ表示。小役パート中は画面全体を魅せるため非表示 */}
-            {(scene === 'bonusSpin' || scene === 'bonusGet' || scene === 'battleModeIntro' || isBattleScene) && (
+            {startupPhase === 'ready' && (scene === 'bonusSpin' || scene === 'bonusGet' || scene === 'battleModeIntro' || isBattleScene) && (
               <div className="lcd-navi-strip">
                 {naviAlert ? (
                   <span className="navi-text danger-pulse">{naviAlert}</span>
@@ -1877,7 +1935,7 @@ function App() {
                   <div className="reels-trio">
                     {reels.map((symbol, idx) => {
                       const winSyms = getReelWindow(symbol, idx)
-                      const isSpinning = (scene === 'spinning' || scene === 'bonusSpin') && !stopped[idx]
+                      const isSpinning = startupPhase === 'ready' && (scene === 'spinning' || scene === 'bonusSpin') && !stopped[idx]
                       const isBounce = bouncing[idx]
                       const isNaviTarget = isReelNaviTarget(idx)
                       const isCherryLit = isCherryDisplay && stopped[idx] && symbol === 'cherry'
@@ -1990,6 +2048,7 @@ function App() {
                   } ${scene === 'battleModeIntro' || scene === 'battle' || (isBattleMode && battlePhase === 'false_defeat' && !falseDefeatWhiteout) ? 'pulse-red' : ''} ${activeControl === 'chance' ? 'chance-pressed' : ''
                   }`}
                 onClick={onChancePress}
+                disabled={startupPhase !== 'ready'}
                 aria-label="CHANCE PUSH BUTTON"
               >
                 <div className="chance-metallic-ring">
@@ -2010,8 +2069,10 @@ function App() {
                 className={`silver-menu-btn interactive-control ${menuOpen ? 'active' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation()
+                  if (startupPhaseRef.current !== 'ready') return
                   setMenuOpen((prev) => !prev)
                 }}
+                disabled={startupPhase !== 'ready'}
                 aria-label="設定メニュー"
                 title="台設定・AUTO・サウンドメニュー (Key: S)"
               >
@@ -2044,7 +2105,7 @@ function App() {
                       onBet()
                     }
                   }}
-                  disabled={scene !== 'ready' && scene !== 'finished'}
+                  disabled={startupPhase !== 'ready' || (scene !== 'ready' && scene !== 'finished')}
                   aria-label={scene === 'finished' ? 'MAX BET (リトライ)' : 'MAX BET'}
                 >
                   <span className="bet-text">MAX<br />BET</span>
@@ -2071,7 +2132,7 @@ function App() {
                     triggerVisual('lever')
                     onLever()
                   }}
-                  disabled={scene !== 'lever'}
+                  disabled={startupPhase !== 'ready' || scene !== 'lever'}
                   aria-label="START LEVER"
                 >
                   <div className="arcade-lever-knob" />
@@ -2081,7 +2142,7 @@ function App() {
 
             <div className="stop-buttons-dock">
               {[0, 1, 2].map((idx) => {
-                const canStop = (scene === 'spinning' || scene === 'bonusSpin') && !stopped[idx]
+                const canStop = startupPhase === 'ready' && (scene === 'spinning' || scene === 'bonusSpin') && !stopped[idx]
                 const isTargetBtn = isReelNaviTarget(idx)
                 const isPressed = activeControl === idx || stopped[idx]
                 return (

@@ -42,7 +42,8 @@
 | プレミアムBAR演出 | `components/PremiumBarDisplay.tsx`（PixiJS + GSAP）、`main.tsx` `triggerPremiumBarEffect` | — | — |
 | 筐体ランプ色（上下・サイドフレーム） | `engine.ts` `resolveTopLampMode`、`components/cabinet/CabinetFrame.tsx`、CSS「トップランプ演出モード別」 | [ランプ仕様](cabinet-lamp-spec.md) | engine |
 | レスポンシブ・スマホ縦1画面 | `layout/cabinetLayout.ts` `computeCabinetLayout`、CSS「MOBILE PORTRAIT」「RESPONSIVE DESIGN」 | [レイアウト仕様](cabinet-responsive-layout.md) | layout |
-| BGM | `game/sceneBgm.ts` `resolveSceneBgmTrack`、ファイルは `bgm.ts` `BGM_PATHS` | `public/audio/README.md` | game |
+| BGM | `game/sceneBgm.ts` `resolveSceneBgmTrack`、`game/bgmController.ts` `BgmPlayerController`、ファイルは `bgm.ts` `BGM_PATHS` | `public/audio/README.md` | game |
+| 初期ロード制御 | `game/startupLoader.ts` `createStartupLoader`、`se.ts` `preloadSe` | — | game |
 | SE・VOICE ファイル | `se.ts` `SeKey` / `SE_FILES`（未配置でもエラーにしない） | `public/audio/README.md` | — |
 | 設定画面（SOUND / AUTO / 倍速） | `components/cabinet/LcdSettingsView.tsx`、開閉は `main.tsx` `menuOpen` | — | — |
 | GAME OVER 結果画面 | `components/GameOverResultDisplay.tsx` | — | — |
