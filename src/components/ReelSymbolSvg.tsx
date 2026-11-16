@@ -7,35 +7,32 @@ interface ReelSymbolSvgProps {
   isCenter?: boolean
 }
 
-export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = '', isCenter = false }) => {
-  const uid = useId()
+export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = '', isCenter: _isCenter = false }) => {
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
   // viewBox: 64 x 42 (リールドラムのセル枠に完璧にフィットするアスペクト比)
   switch (id) {
     case 'seven':
       return (
         <svg viewBox="0 0 64 42" className={`symbol-svg symbol-seven ${className}`}>
           <defs>
-            <linearGradient id="sevenGoldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id={`${uid}-sevenGoldBorder`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#fff5b8" />
               <stop offset="35%" stopColor="#ffd700" />
               <stop offset="70%" stopColor="#d48800" />
               <stop offset="100%" stopColor="#fff099" />
             </linearGradient>
-            <linearGradient id="sevenRubyBody" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id={`${uid}-sevenRubyBody`} x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#ff7085" />
               <stop offset="25%" stopColor="#ff1438" />
               <stop offset="65%" stopColor="#b30018" />
               <stop offset="100%" stopColor="#66000a" />
             </linearGradient>
-            <filter id="sevenGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000" floodOpacity="0.8" />
-            </filter>
           </defs>
-          <g filter={isCenter ? 'url(#sevenGlow)' : undefined}>
+          <g>
             {/* Outer Gold Extrusion / Border */}
             <path
               d="M 12 7 L 54 7 L 36 37 L 22 37 L 35 15 L 12 15 Z"
-              fill="url(#sevenGoldBorder)"
+              fill={`url(#${uid}-sevenGoldBorder)`}
               stroke="#590008"
               strokeWidth="1.2"
               strokeLinejoin="round"
@@ -43,7 +40,7 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
             {/* Inner Ruby Body */}
             <path
               d="M 14.5 9.5 L 50.5 9.5 L 34.5 35 L 24.5 35 L 37.5 17.5 L 14.5 17.5 Z"
-              fill="url(#sevenRubyBody)"
+              fill={`url(#${uid}-sevenRubyBody)`}
             />
             {/* Top Gloss Highlight */}
             <path
@@ -65,34 +62,31 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
       return (
         <svg viewBox="0 0 64 42" className={`symbol-svg symbol-bell ${className}`}>
           <defs>
-            <linearGradient id="bellGoldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id={`${uid}-bellGoldGrad`} x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#fff8cc" />
               <stop offset="25%" stopColor="#ffcc00" />
               <stop offset="70%" stopColor="#d48800" />
               <stop offset="100%" stopColor="#7a4b00" />
             </linearGradient>
-            <linearGradient id="bellRibbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id={`${uid}-bellRibbonGrad`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#ff2244" />
               <stop offset="50%" stopColor="#ff6688" />
               <stop offset="100%" stopColor="#cc0022" />
             </linearGradient>
-            <filter id="bellShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000" floodOpacity="0.75" />
-            </filter>
           </defs>
-          <g filter={isCenter ? 'url(#bellShadow)' : undefined}>
+          <g>
             {/* Clapper (下部の舌) */}
             <circle cx="32" cy="35.5" r="4.5" fill="#ffd700" stroke="#4a3000" strokeWidth="1" />
             {/* Bell Main Body */}
             <path
               d="M 32 6 C 26 6 22 10 21 18 C 20 25 15 28 14 31 L 50 31 C 49 28 44 25 43 18 C 42 10 38 6 32 6 Z"
-              fill="url(#bellGoldGrad)"
+              fill={`url(#${uid}-bellGoldGrad)`}
               stroke="#4a3000"
               strokeWidth="1.2"
               strokeLinejoin="round"
             />
             {/* Bell Bottom Rim */}
-            <ellipse cx="32" cy="31" rx="18" ry="3.2" fill="url(#bellGoldGrad)" stroke="#4a3000" strokeWidth="1.2" />
+            <ellipse cx="32" cy="31" rx="18" ry="3.2" fill={`url(#${uid}-bellGoldGrad)`} stroke="#4a3000" strokeWidth="1.2" />
             {/* Top Crown Ring */}
             <ellipse cx="32" cy="6" rx="4" ry="2.2" fill="#ffe57f" stroke="#4a3000" strokeWidth="1" />
             {/* Specular Highlight */}
@@ -104,7 +98,7 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
             {/* Red Bow Ribbon on Top */}
             <path
               d="M 32 10 C 29 7 24 8 26 12 C 28 15 32 12 32 12 C 32 12 36 15 38 12 C 40 8 35 7 32 10 Z"
-              fill="url(#bellRibbonGrad)"
+              fill={`url(#${uid}-bellRibbonGrad)`}
               stroke="#59000a"
               strokeWidth="0.8"
             />
@@ -127,11 +121,8 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
               <stop offset="45%" stopColor="#d9f6ff" />
               <stop offset="100%" stopColor="#80d4ff" />
             </linearGradient>
-            <filter id={`${uid}-repGlow`} x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000" floodOpacity="0.8" />
-            </filter>
           </defs>
-          <g filter={isCenter ? `url(#${uid}-repGlow)` : undefined}>
+          <g>
             {/* Oval Base Plate */}
             <ellipse cx="32" cy="21" rx="27" ry="15" fill="#00183b" stroke="#00d9ff" strokeWidth="1.8" />
             <ellipse cx="32" cy="21" rx="24.5" ry="12.5" fill={`url(#${uid}-repPlateGrad)`} />
@@ -168,21 +159,21 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
       return (
         <svg viewBox="0 0 64 42" className={`symbol-svg symbol-bar ${className}`}>
           <defs>
-            <linearGradient id="barMetalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id={`${uid}-barMetalGrad`} x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#404859" />
               <stop offset="30%" stopColor="#1e2430" />
               <stop offset="70%" stopColor="#0c1017" />
               <stop offset="100%" stopColor="#252d3d" />
             </linearGradient>
-            <linearGradient id="barGoldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id={`${uid}-barGoldBorder`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#fff2a3" />
               <stop offset="50%" stopColor="#d49b20" />
               <stop offset="100%" stopColor="#7a5508" />
             </linearGradient>
           </defs>
           <g>
-            <rect x="7" y="9" width="50" height="24" rx="3.5" fill="url(#barGoldBorder)" stroke="#000" strokeWidth="1" />
-            <rect x="9" y="11" width="46" height="20" rx="2.5" fill="url(#barMetalGrad)" />
+            <rect x="7" y="9" width="50" height="24" rx="3.5" fill={`url(#${uid}-barGoldBorder)`} stroke="#000" strokeWidth="1" />
+            <rect x="9" y="11" width="46" height="20" rx="2.5" fill={`url(#${uid}-barMetalGrad)`} />
             <text
               x="32"
               y="26.5"
@@ -264,7 +255,7 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
       return (
         <svg viewBox="0 0 64 42" className={`symbol-svg symbol-star ${className}`}>
           <defs>
-            <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id={`${uid}-starGrad`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#bde8ff" />
               <stop offset="50%" stopColor="#47adff" />
               <stop offset="100%" stopColor="#1560bd" />
@@ -273,7 +264,7 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
           <g>
             <polygon
               points="32,8 35.5,17 45,17.5 37.5,23.5 40,32.5 32,27 24,32.5 26.5,23.5 19,17.5 28.5,17"
-              fill="url(#starGrad)"
+              fill={`url(#${uid}-starGrad)`}
               stroke="#0a2a5e"
               strokeWidth="1.2"
               strokeLinejoin="round"
@@ -283,4 +274,3 @@ export const ReelSymbolSvg: React.FC<ReelSymbolSvgProps> = ({ id, className = ''
       )
   }
 }
-

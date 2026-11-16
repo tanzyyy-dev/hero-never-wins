@@ -68,6 +68,22 @@ export function getAudioContext(): AudioContext {
   return sharedAudioContext
 }
 
+export function isSeAudioRunning(): boolean {
+  return sharedAudioContext?.state === 'running'
+}
+
+export async function unlockSeAudio(): Promise<boolean> {
+  try {
+    const ctx = getAudioContext()
+    if (ctx.state === 'suspended') {
+      await ctx.resume()
+    }
+    return ctx.state === 'running'
+  } catch {
+    return false
+  }
+}
+
 export function suspendSeAudio(): void {
   stopVoiceSe()
   if (sharedAudioContext && sharedAudioContext.state === 'running') {
@@ -95,21 +111,60 @@ export async function preloadSe(key: SeKey): Promise<AudioBuffer | null> {
   const promise = (async () => {
     try {
       const response = await fetch(SE_FILES[key])
-      if (!response.ok) return null
+      if (!response.ok) {
+        loadPromises.delete(key)
+        return null
+      }
       const contentType = response.headers.get('content-type') ?? ''
-      if (contentType.includes('text/html')) return null
+      if (contentType.includes('text/html')) {
+        loadPromises.delete(key)
+        return null
+      }
       const arrayBuffer = await response.arrayBuffer()
       const ctx = getAudioContext()
       const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
       bufferCache.set(key, audioBuffer)
       return audioBuffer
     } catch {
+      loadPromises.delete(key)
       return null
     }
   })()
 
   loadPromises.set(key, promise)
   return promise
+}
+
+/**
+ * 指定した効果音キーのみを優先して先行デコードする
+ */
+export async function preloadSeList(keys: readonly SeKey[]): Promise<void> {
+  await Promise.all(keys.map((key) => preloadSe(key)))
+}
+
+let deferredPreloadStarted = false
+
+/**
+ * 残りの効果音をバックグラウンドで少数並列（デフォルト2件）ずつプリロードする
+ */
+export function preloadDeferredSe(keys: readonly SeKey[], concurrency = 2): void {
+  if (deferredPreloadStarted) return
+  deferredPreloadStarted = true
+
+  const queue = keys.filter((k) => !bufferCache.has(k))
+  if (queue.length === 0) return
+
+  let index = 0
+  const workerCount = Math.min(concurrency, queue.length)
+  const runWorker = async () => {
+    while (index < queue.length) {
+      const key = queue[index++]!
+      await preloadSe(key)
+    }
+  }
+  for (let i = 0; i < workerCount; i++) {
+    void runWorker()
+  }
 }
 
 /**

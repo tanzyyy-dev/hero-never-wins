@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { BgmPlayerController, type BgmPathMap, type BgmTrack } from './game/bgmController'
 
-export type BgmTrack = 'opening' | 'pre_battle' | 'battle' | 'gameover' | null
+export type { BgmTrack }
 
 // BGMファイルパス定義 (プライマリパスとフォールバックパス)
-const BGM_PATHS: Record<'opening' | 'pre_battle' | 'battle' | 'gameover', string[]> = {
+const BGM_PATHS: BgmPathMap = {
   opening: ['audio/bgm_opening.mp3', 'bgm_opening.mp3'],
   pre_battle: ['audio/bgm_pre_battle.mp3', 'bgm_pre_battle.mp3'],
   battle: ['audio/bgm_battle.mp3', 'bgm_battle.mp3'],
@@ -12,126 +13,103 @@ const BGM_PATHS: Record<'opening' | 'pre_battle' | 'battle' | 'gameover', string
 
 /**
  * BGM再生制御フック
- * @param track 再生したいトラック ('pre_battle' | 'battle' | null)
+ * @param track 再生したいトラック ('opening' | 'pre_battle' | 'battle' | 'gameover' | null)
  * @param muted ミュート状態
  * @param isDimmed 設定画面等で音量を半分にするフラグ
  */
 export function useBgm(track: BgmTrack, muted: boolean, isDimmed = false) {
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null)
-  const currentTrackRef = useRef<BgmTrack>(null)
   const [unlocked, setUnlocked] = useState(false)
 
   const normalVolume = 0.38
   const dimmedVolume = 0.19
   const currentVolume = isDimmed ? dimmedVolume : normalVolume
 
-  // 音量同期
+  const controllerRef = useRef<BgmPlayerController | null>(null)
+  if (!controllerRef.current) {
+    controllerRef.current = new BgmPlayerController(
+      () => new Audio(),
+      {
+        paths: BGM_PATHS,
+        initialVolume: currentVolume,
+        onError: (record) => {
+          console.warn(`[BGM] ${record.name} (${record.track ?? 'none'}): ${record.message}`)
+          if (typeof window !== 'undefined') {
+            ;(window as unknown as { __bgmLastError?: typeof record }).__bgmLastError = record
+          }
+        },
+      },
+    )
+  }
+
+  // アンマウント時の完全クリーンアップ
   useEffect(() => {
-    if (currentAudioRef.current) {
-      currentAudioRef.current.volume = currentVolume
+    const controller = controllerRef.current
+    return () => {
+      controller?.dispose()
     }
+  }, [])
+
+  // 音量変更のみを同期（トラック切り替えや pause/play を発生させない）
+  useEffect(() => {
+    controllerRef.current?.setVolume(currentVolume)
   }, [currentVolume])
 
-  // ユーザーの初操作でオーディオ再生をアンロック (ブラウザのAutoplay Policy対策)
-  const unlockAudio = useCallback(() => {
-    if (unlocked) return
-    setUnlocked(true)
-  }, [unlocked])
-
-  // グローバルなタップ・クリック・キー入力でアンロック
+  // ミュート状態の同期
   useEffect(() => {
-    const handleFirstInteraction = () => {
-      unlockAudio()
-      window.removeEventListener('pointerdown', handleFirstInteraction)
-      window.removeEventListener('keydown', handleFirstInteraction)
+    controllerRef.current?.setMuted(muted)
+  }, [muted])
+
+  // ユーザーの操作イベント内で直接再生許可を確立・保留中の再生を再試行する
+  const unlockAudio = useCallback(() => {
+    const controller = controllerRef.current
+    if (!controller) return
+    const newlyUnlocked = controller.unlockFromUserGesture()
+    if (newlyUnlocked) {
+      setUnlocked(true)
     }
-    window.addEventListener('pointerdown', handleFirstInteraction, { passive: true })
-    window.addEventListener('keydown', handleFirstInteraction, { passive: true })
+    if (typeof window !== 'undefined') {
+      const audio = controller.getAudio()
+      if (audio instanceof HTMLAudioElement) {
+        ;(window as unknown as { __bgmAudio?: HTMLAudioElement }).__bgmAudio = audio
+      }
+    }
+  }, [])
+
+  // 未アンロック時または NotAllowedError 後の再試行待ち時に、次のユーザー操作で復旧
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      const controller = controllerRef.current
+      if (!controller) return
+      if (!controller.isUnlocked() || controller.hasPendingUserGestureRetry()) {
+        unlockAudio()
+      }
+    }
+    window.addEventListener('pointerdown', handleUserInteraction, { passive: true })
+    window.addEventListener('keydown', handleUserInteraction, { passive: true })
     return () => {
-      window.removeEventListener('pointerdown', handleFirstInteraction)
-      window.removeEventListener('keydown', handleFirstInteraction)
+      window.removeEventListener('pointerdown', handleUserInteraction)
+      window.removeEventListener('keydown', handleUserInteraction)
     }
   }, [unlockAudio])
 
-  // トラック変更・ミュート連動
+  // トラック変更のみを同期（音量変更では再実行しない）
   useEffect(() => {
-    currentTrackRef.current = track
+    const controller = controllerRef.current
+    if (!controller) return
+
     if (typeof window !== 'undefined') {
       ;(window as unknown as { __bgmTrack?: BgmTrack }).__bgmTrack = track
     }
 
-    // トラックが null または未アンロック時は停止
-    if (!track || !unlocked) {
-      if (currentAudioRef.current) {
-        currentAudioRef.current.pause()
-      }
-      return
-    }
+    controller.setTrack(track)
 
-    // 既に同じトラックを再生中ならミュートと再生状態・音量だけ同期
-    if (currentAudioRef.current && currentAudioRef.current.dataset.trackId === track) {
-      currentAudioRef.current.muted = muted
-      currentAudioRef.current.volume = currentVolume
-      if (!muted && currentAudioRef.current.paused) {
-        currentAudioRef.current.play().catch(() => {
-          // ファイル未配置または再生ブロック時はサイレントに無視
-        })
-      }
-      return
-    }
-
-    // 前のトラックを停止
-    if (currentAudioRef.current) {
-      currentAudioRef.current.pause()
-      currentAudioRef.current.currentTime = 0
-      currentAudioRef.current = null
-    }
-
-    // 新しいトラックを準備
-    const candidatePaths = BGM_PATHS[track]
-    let pathIndex = 0
-
-    const tryPlayAudio = () => {
-      if (pathIndex >= candidatePaths.length) return
-      const src = candidatePaths[pathIndex]
-
-      const audio = new Audio(src)
-      audio.dataset.trackId = track
-      audio.loop = true
-      audio.volume = currentVolume
-      audio.muted = muted
-
-      audio.onerror = () => {
-        // パスが見つからない場合は次の候補パスを試す
-        pathIndex++
-        if (pathIndex < candidatePaths.length) {
-          tryPlayAudio()
-        }
-      }
-
-      const playPromise = audio.play()
-      if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
+      const audio = controller.getAudio()
+      if (audio instanceof HTMLAudioElement) {
         ;(window as unknown as { __bgmAudio?: HTMLAudioElement }).__bgmAudio = audio
       }
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            currentAudioRef.current = audio
-          })
-          .catch(() => {
-            // 自動再生ブロックやファイル未配置時はサイレントに無視
-          })
-      }
     }
-
-    tryPlayAudio()
-
-    return () => {
-      if (currentAudioRef.current) {
-        currentAudioRef.current.pause()
-      }
-    }
-  }, [track, muted, unlocked, currentVolume])
+  }, [track, unlocked])
 
   return {
     unlocked,
